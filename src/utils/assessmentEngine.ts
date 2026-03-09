@@ -1,4 +1,4 @@
-import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay, SnackDay } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay, SnackDay, LunchDay } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
   const score = calculateScore(r);
@@ -17,7 +17,93 @@ export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary 
     drinkPlan: generateDrinkPlan(programRecommendation, gutType),
     breakfastPlan: generateBreakfastPlan(r, programRecommendation),
     snackPlan: generateSnackPlan(programRecommendation, gutType),
+    lunchPlan: generateLunchPlan(r, programRecommendation, gutType),
   };
+}
+
+function generateLunchPlan(r: QuestionnaireResponse, program: ProgramRecommendation, gutType: GutTypeAnalysis): LunchDay[] {
+  const days = program.program === '28 Day Deep Gut Reset' ? 28 : 14;
+  const isVegan = r.diet_type === 'vegan';
+  const isVegetarian = r.diet_type === 'vegetarian';
+
+  const grains = [
+    'Brown rice', 'Jowar roti', 'Bajra roti', 'Quinoa pulao',
+    'Whole wheat roti', 'Ragi roti', 'Foxtail millet rice', 'Red rice',
+    'Barley khichdi', 'Multi-millet roti', 'Amaranth roti', 'Little millet rice',
+    'Kodo millet rice', 'Barnyard millet pulao',
+  ];
+
+  const vegDishes = [
+    'Palak sabzi (spinach)', 'Lauki sabzi (bottle gourd)', 'Bhindi masala (okra)',
+    'Mixed vegetable curry', 'Turai sabzi (ridge gourd)', 'Methi aloo (fenugreek leaves)',
+    'Cabbage poriyal', 'Baingan bharta (eggplant)', 'Pumpkin sabzi', 'Beans & carrot stir-fry',
+    'Drumstick sambar', 'Tender jackfruit curry', 'Parwal sabzi (pointed gourd)', 'Beetroot poriyal',
+  ];
+
+  const veganProteins = [
+    'Moong dal tadka', 'Chana masala', 'Rajma curry', 'Masoor dal',
+    'Sprouted moong salad', 'Toor dal', 'Black-eyed pea curry', 'Mixed dal',
+    'Soya chunks curry', 'Whole green moong dal', 'Urad dal', 'Chana dal',
+    'Kulthi dal (horse gram)', 'Moth bean curry',
+  ];
+
+  const vegProteins = [
+    ...veganProteins.slice(0, 10),
+    'Paneer bhurji', 'Curd/raita', 'Paneer tikka masala', 'Kadhi pakora',
+  ];
+
+  const nonVegProteins = [
+    'Egg curry', 'Boiled egg with dal',
+    ...veganProteins.slice(0, 12),
+  ];
+
+  const proteins = isVegan ? veganProteins : isVegetarian ? vegProteins : nonVegProteins;
+
+  const salads = [
+    'Cucumber, tomato & onion kachumber', 'Carrot & beetroot slaw with lemon',
+    'Cabbage & coriander salad', 'Sprouts & pomegranate salad',
+    'Radish & green chutney salad', 'Mixed greens with lime dressing',
+    'Raw papaya & carrot salad', 'Onion & mint salad',
+    'Mooli (radish) & cucumber salad', 'Tomato & raw mango salad',
+    'Grated beetroot & coconut salad', 'Cabbage & peanut salad',
+    'Sprouts & cucumber raita salad', 'Carrot & coriander slaw',
+  ];
+
+  const gutBenefits: Record<GutTypeName, string[]> = {
+    'Inflammatory Gut': [
+      'Anti-inflammatory spices soothe gut lining', 'Fiber reduces intestinal permeability',
+      'Diverse vegetables lower inflammatory markers', 'Whole grains provide gentle, sustained energy',
+    ],
+    'Sluggish Gut': [
+      'High fiber stimulates peristalsis', 'Millet grains promote bowel regularity',
+      'Raw salad enzymes aid motility', 'Dal fiber feeds motility-boosting bacteria',
+    ],
+    'Dysbiosis Gut': [
+      'Vegetable diversity feeds varied gut bacteria', 'Prebiotic fiber restores microbiome balance',
+      'Lentils provide resistant starch for good bacteria', 'Raw salad enzymes support digestion',
+    ],
+    'Stress Gut': [
+      'Balanced meal stabilizes blood sugar & cortisol', 'Magnesium-rich grains calm nervous system',
+      'Fiber-rich dal supports serotonin production', 'Nutrient density supports gut-brain axis',
+    ],
+  };
+
+  const benefits = gutBenefits[gutType.primary];
+  const plan: LunchDay[] = [];
+
+  for (let d = 1; d <= days; d++) {
+    const idx = (d - 1) % 14;
+    plan.push({
+      day: d,
+      mainGrain: grains[idx],
+      vegetableDish: vegDishes[idx],
+      proteinDish: proteins[idx],
+      rawSalad: salads[idx],
+      gutBenefit: benefits[(d - 1) % benefits.length],
+    });
+  }
+
+  return plan;
 }
 
 function generateSnackPlan(program: ProgramRecommendation, gutType: GutTypeAnalysis): SnackDay[] {

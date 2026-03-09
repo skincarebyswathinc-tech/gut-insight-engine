@@ -42,6 +42,7 @@ export interface AssessmentSummary {
   drinkPlan: DrinkDay[];
   breakfastPlan: BreakfastDay[];
   snackPlan: SnackDay[];
+  lunchPlan: LunchDay[];
 }
 
 export interface BreakfastDay {
@@ -57,6 +58,15 @@ export interface SnackDay {
   day: number;
   snack: string;
   keyBenefit: string;
+}
+
+export interface LunchDay {
+  day: number;
+  mainGrain: string;
+  vegetableDish: string;
+  proteinDish: string;
+  rawSalad: string;
+  gutBenefit: string;
 }
 
 export interface DrinkDay {
