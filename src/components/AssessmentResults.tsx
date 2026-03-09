@@ -101,6 +101,39 @@ export default function AssessmentResults({ summary, onReset }: Props) {
         </CardContent>
       </Card>
 
+      {/* Gut Type Classification */}
+      <Card className="border-primary/20 shadow-lg overflow-hidden">
+        <CardHeader className="bg-primary/5 border-b border-border/50 pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-serif">
+            <primaryMeta.icon className={`h-5 w-5 ${primaryMeta.color}`} />
+            Gut Microbiome Profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className={`p-3 rounded-full ${primaryMeta.bg}`}>
+              <primaryMeta.icon className={`h-6 w-6 ${primaryMeta.color}`} />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Primary Gut Type</p>
+              <p className={`text-xl font-serif font-bold ${primaryMeta.color}`}>{gutType.primary}</p>
+            </div>
+          </div>
+          {gutType.secondary && (
+            <div className="flex items-center gap-3 pl-1">
+              <div className={`p-2 rounded-full ${GUT_TYPE_META[gutType.secondary].bg}`}>
+                {(() => { const Icon = GUT_TYPE_META[gutType.secondary!].icon; return <Icon className={`h-4 w-4 ${GUT_TYPE_META[gutType.secondary!].color}`} />; })()}
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Secondary Pattern</p>
+                <p className="text-sm font-semibold text-foreground">{gutType.secondary}</p>
+              </div>
+            </div>
+          )}
+          <p className="text-sm text-foreground/80 leading-relaxed border-t border-border/50 pt-4">{gutType.explanation}</p>
+        </CardContent>
+      </Card>
+
       {SECTIONS.map(({ key, title, icon: Icon, color }) => (
         <Card key={key} className="border-primary/10 shadow-md hover:shadow-lg transition-shadow">
           <CardHeader className="pb-2">
