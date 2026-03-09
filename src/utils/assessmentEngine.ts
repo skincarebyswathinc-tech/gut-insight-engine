@@ -1,4 +1,4 @@
-import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay, SnackDay, LunchDay, EveningSnackDay, DinnerDay } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay, SnackDay, LunchDay, EveningSnackDay, DinnerDay, PostDinnerDay } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
   const score = calculateScore(r);
@@ -20,7 +20,58 @@ export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary 
     lunchPlan: generateLunchPlan(r, programRecommendation, gutType),
     eveningSnackPlan: generateEveningSnackPlan(programRecommendation, gutType),
     dinnerPlan: generateDinnerPlan(programRecommendation, gutType),
+    postDinnerPlan: generatePostDinnerPlan(programRecommendation, gutType),
   };
+}
+
+function generatePostDinnerPlan(program: ProgramRecommendation, gutType: GutTypeAnalysis): PostDinnerDay[] {
+  const days = program.program === '28 Day Deep Gut Reset' ? 28 : 14;
+
+  const drinks = [
+    { drink: 'Warm fennel seed water', benefit: 'Fennel relaxes intestinal muscles, reduces gas & bloating after meals' },
+    { drink: 'Cumin-coriander water (lukewarm)', benefit: 'Stimulates digestive enzymes; coriander cools while cumin warms for balanced digestion' },
+    { drink: 'Fresh ginger infusion with lemon', benefit: 'Gingerols accelerate gastric emptying; lemon alkalizes post-meal acid' },
+    { drink: 'Warm turmeric water with black pepper', benefit: 'Curcumin repairs gut lining overnight; piperine boosts absorption 20x' },
+    { drink: 'Ajwain (carom seed) water', benefit: 'Thymol in ajwain relieves indigestion and prevents post-meal heaviness' },
+    { drink: 'Mint & fennel infusion', benefit: 'Menthol soothes digestive tract spasms; fennel prevents overnight fermentation' },
+    { drink: 'Warm coriander seed water', benefit: 'Coriander seeds reduce intestinal cramping and support liver detox during sleep' },
+    { drink: 'Ginger-turmeric golden water', benefit: 'Double anti-inflammatory action supports overnight gut mucosal repair' },
+    { drink: 'Cumin water with a pinch of hing (asafoetida)', benefit: 'Hing is the strongest carminative; eliminates trapped gas and heaviness' },
+    { drink: 'Fennel-ginger warm infusion', benefit: 'Combines prokinetic ginger with antispasmodic fennel for complete digestive ease' },
+    { drink: 'Warm dill seed water', benefit: 'Dill relaxes the GI tract and reduces overnight acid reflux' },
+    { drink: 'Cumin-fennel-coriander triple seed water', benefit: 'Classic CCF tea — the Ayurvedic gold standard for post-meal digestive reset' },
+    { drink: 'Warm lemongrass & ginger infusion', benefit: 'Lemongrass is antimicrobial; ginger promotes overnight motility' },
+    { drink: 'Warm fenugreek seed water', benefit: 'Mucilage in fenugreek coats and protects gut lining during overnight fasting' },
+  ];
+
+  const solids = [
+    '1 Medjool date (iron + fiber)',
+    '5 soaked raisins (natural laxative)',
+    '1 date with a pinch of cardamom',
+    '5 raisins soaked in warm water',
+    '1 date stuffed with a walnut',
+    '5 golden raisins (prebiotic fiber)',
+    '1 date with ghee (gut lubrication)',
+  ];
+
+  const typeBonus: Record<GutTypeName, string> = {
+    'Inflammatory Gut': 'Warm infusion calms inflamed tissues before overnight healing.',
+    'Sluggish Gut': 'Digestive stimulants ensure complete overnight processing.',
+    'Dysbiosis Gut': 'Antimicrobial herbs suppress harmful bacteria during sleep.',
+    'Stress Gut': 'Warm ritual activates parasympathetic rest-and-digest mode.',
+  };
+
+  const plan: PostDinnerDay[] = [];
+  for (let d = 1; d <= days; d++) {
+    const idx = (d - 1) % drinks.length;
+    plan.push({
+      day: d,
+      drink: drinks[idx].drink,
+      digestiveSolid: solids[(d - 1) % solids.length],
+      benefit: `${drinks[idx].benefit}. ${typeBonus[gutType.primary]}`,
+    });
+  }
+  return plan;
 }
 
 function generateDinnerPlan(program: ProgramRecommendation, gutType: GutTypeAnalysis): DinnerDay[] {
