@@ -1,4 +1,4 @@
-import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
   const score = calculateScore(r);
@@ -14,7 +14,63 @@ export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary 
     rootCauses: analyzeRootCauses(r, score, gutType),
     programRecommendation,
     healingStrategy: createHealingStrategy(r, gutType, programRecommendation),
+    drinkPlan: generateDrinkPlan(programRecommendation, gutType),
   };
+}
+
+function generateDrinkPlan(program: ProgramRecommendation, gutType: GutTypeAnalysis): DrinkDay[] {
+  const days = program.program === '28 Day Deep Gut Reset' ? 28 : 14;
+
+  // Morning detox drinks rotation
+  const morningDrinks = [
+    { name: 'CCF Detox Water', ingredients: 'Cumin, coriander, fennel seeds steeped in warm water', benefit: 'digestive fire' },
+    { name: 'Ginger Lemon Elixir', ingredients: 'Fresh ginger, lemon juice, warm water, pinch of turmeric', benefit: 'metabolism boost' },
+    { name: 'Mint Coriander Cleanser', ingredients: 'Fresh mint, coriander leaves, cumin, warm water', benefit: 'toxin elimination' },
+    { name: 'Turmeric Ginger Shot', ingredients: 'Fresh turmeric, ginger, black pepper, lemon, warm water', benefit: 'anti-inflammatory' },
+    { name: 'Fennel Fenugreek Tonic', ingredients: 'Fennel seeds, fenugreek seeds soaked overnight, strained water', benefit: 'blood sugar balance' },
+    { name: 'Curry Leaf Detox', ingredients: 'Fresh curry leaves, cumin, ginger, warm water', benefit: 'liver detox' },
+    { name: 'Ash Gourd Cleanse', ingredients: 'Fresh ash gourd juice, mint, cumin powder', benefit: 'cooling detox' },
+  ];
+
+  // Functional drinks rotation
+  const functionalDrinks = [
+    { name: 'Gut Soothing Lassi', ingredients: 'Fresh yogurt, roasted cumin, mint, rock salt', benefit: 'probiotic support' },
+    { name: 'Digestive Buttermilk', ingredients: 'Buttermilk, curry leaves, ginger, asafoetida', benefit: 'digestive enzyme' },
+    { name: 'Golden Turmeric Milk', ingredients: 'Warm milk/plant milk, turmeric, black pepper, ginger', benefit: 'gut lining repair' },
+    { name: 'Fennel Coriander Cooler', ingredients: 'Fennel water, coriander, mint, jaggery', benefit: 'bloating relief' },
+    { name: 'Fenugreek Digestive Aid', ingredients: 'Fenugreek water, ginger, lemon, honey', benefit: 'metabolic health' },
+    { name: 'Mint Ginger Refresher', ingredients: 'Fresh mint, ginger, lemon, cumin, cold water', benefit: 'gut motility' },
+    { name: 'Curry Leaf Buttermilk', ingredients: 'Buttermilk, curry leaves, green chili, coriander', benefit: 'microbiome balance' },
+  ];
+
+  // Benefits based on gut type
+  const typebenefits: Record<GutTypeName, string[]> = {
+    'Inflammatory Gut': ['Soothes inflamed gut lining', 'Reduces intestinal irritation', 'Cools digestive fire', 'Supports barrier repair'],
+    'Sluggish Gut': ['Stimulates digestive fire', 'Promotes bowel movement', 'Enhances gut motility', 'Improves nutrient absorption'],
+    'Dysbiosis Gut': ['Feeds beneficial bacteria', 'Reduces harmful bacterial overgrowth', 'Restores microbiome balance', 'Supports probiotic colonization'],
+    'Stress Gut': ['Calms nervous system', 'Supports gut-brain axis', 'Reduces stress-related inflammation', 'Promotes parasympathetic activation'],
+  };
+
+  const benefits = typebenefits[gutType.primary];
+  const plan: DrinkDay[] = [];
+
+  for (let d = 1; d <= days; d++) {
+    const morningIdx = (d - 1) % morningDrinks.length;
+    const funcIdx = (d - 1) % functionalDrinks.length;
+    const benefitIdx = (d - 1) % benefits.length;
+
+    const morning = morningDrinks[morningIdx];
+    const functional = functionalDrinks[funcIdx];
+
+    plan.push({
+      day: d,
+      morningDetox: { name: morning.name, ingredients: morning.ingredients },
+      functionalDrink: { name: functional.name, ingredients: functional.ingredients },
+      benefits: `${morning.benefit.charAt(0).toUpperCase() + morning.benefit.slice(1)}, ${functional.benefit}, ${benefits[benefitIdx].toLowerCase()}`,
+    });
+  }
+
+  return plan;
 }
 
 function createHealingStrategy(r: QuestionnaireResponse, gutType: GutTypeAnalysis, program: ProgramRecommendation): HealingStrategy {
