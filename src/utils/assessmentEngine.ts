@@ -1,4 +1,4 @@
-import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
   const score = calculateScore(r);
@@ -11,7 +11,60 @@ export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary 
     score,
     gutType,
     rootCauses: analyzeRootCauses(r, score, gutType),
+    programRecommendation: recommendProgram(r, score),
   };
+}
+
+function recommendProgram(r: QuestionnaireResponse, score: GutHealthScore): ProgramRecommendation {
+  // Symptom severity indicators
+  const severeSymptoms =
+    r.bloating === 'daily' ||
+    r.abdominal_pain === 'severe' ||
+    r.bowel_regularity === 'very_irregular' ||
+    r.food_triggers.length >= 4;
+
+  const moderateSymptoms =
+    r.bloating === 'often' ||
+    r.abdominal_pain === 'moderate' ||
+    r.stool_consistency === 'variable' ||
+    r.food_triggers.length >= 2;
+
+  // Lifestyle factors that slow healing
+  const challengingLifestyle =
+    r.stress_level === 'very_high' ||
+    r.sleep_hours < 5 ||
+    (r.processed_food === 'daily' && r.fiber_intake === 'low');
+
+  // Decision logic
+  const needs28Day = score.total < 50 || severeSymptoms || (moderateSymptoms && challengingLifestyle);
+
+  const program: ProgramType = needs28Day ? '28 Day Deep Gut Reset' : '14 Day Gut Reset';
+
+  let durationReason: string;
+  let expectedImprovements: string[];
+
+  if (needs28Day) {
+    durationReason = score.total < 50
+      ? `With a gut health score of ${score.total}/100, your digestive system needs extended support for meaningful repair. The 28-day program allows time for your gut lining to heal, beneficial bacteria to repopulate, and new habits to become automatic.`
+      : `Your symptom pattern shows deeper imbalances that require a longer reset window. The 28-day duration ensures we address root causes rather than just suppressing symptoms, giving your microbiome the full cycle it needs to rebalance.`;
+
+    expectedImprovements = [
+      'Week 1: Reduced bloating and initial digestive comfort as inflammatory foods are removed',
+      'Week 2: More regular bowel movements and improved energy levels',
+      'Week 3: Noticeable reduction in food sensitivities and clearer thinking',
+      'Week 4: Stabilized digestion, better sleep quality, and sustainable eating patterns established',
+    ];
+  } else {
+    durationReason = `Your gut health score of ${score.total}/100 indicates a solid foundation with targeted areas for improvement. The 14-day program is ideal for a focused reset that addresses your specific imbalances without requiring an extended commitment.`;
+
+    expectedImprovements = [
+      'Days 1-5: Digestive system begins to calm, early reduction in bloating and discomfort',
+      'Days 6-10: Energy levels improve, bowel regularity increases, initial microbiome shifts occur',
+      'Days 11-14: Solidified habits, clearer understanding of your trigger foods, and noticeable overall improvement in gut function',
+    ];
+  }
+
+  return { program, durationReason, expectedImprovements };
 }
 
 function analyzeRootCauses(r: QuestionnaireResponse, score: GutHealthScore, gutType: GutTypeAnalysis): RootCauseAnalysis {
