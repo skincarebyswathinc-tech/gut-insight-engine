@@ -2,7 +2,7 @@ import { AssessmentSummary, GutTypeName } from '@/types/assessment';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Activity, Utensils, Moon, Apple, Droplets, Heart, Flame, Snail, Bug, Brain } from 'lucide-react';
+import { Activity, Utensils, Moon, Apple, Droplets, Heart, Flame, Snail, Bug, Brain, AlertTriangle, Zap, Search } from 'lucide-react';
 
 interface Props {
   summary: AssessmentSummary;
@@ -45,7 +45,7 @@ const GUT_TYPE_META: Record<GutTypeName, { icon: typeof Flame; color: string; bg
 };
 
 export default function AssessmentResults({ summary, onReset }: Props) {
-  const { score, gutType } = summary;
+  const { score, gutType, rootCauses } = summary;
   const primaryMeta = GUT_TYPE_META[gutType.primary];
 
   return (
@@ -131,6 +131,48 @@ export default function AssessmentResults({ summary, onReset }: Props) {
             </div>
           )}
           <p className="text-sm text-foreground/80 leading-relaxed border-t border-border/50 pt-4">{gutType.explanation}</p>
+        </CardContent>
+      </Card>
+
+      {/* Root Cause Analysis */}
+      <Card className="border-primary/20 shadow-lg overflow-hidden">
+        <CardHeader className="bg-primary/5 border-b border-border/50 pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-serif">
+            <Search className="h-5 w-5 text-primary" />
+            Root Cause Analysis
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-5">
+          <div>
+            <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              Top 3 Root Causes
+            </h4>
+            <div className="space-y-3">
+              {rootCauses.topCauses.map((c, i) => (
+                <div key={i} className="flex gap-3 items-start">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{c.cause}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{c.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-border/50 pt-4">
+            <h4 className="text-sm font-semibold text-foreground mb-2">Digestive Pattern</h4>
+            <p className="text-sm text-foreground/80 leading-relaxed">{rootCauses.digestivePatternExplanation}</p>
+          </div>
+
+          <div className="border-t border-border/50 pt-4 bg-primary/5 -mx-6 -mb-6 px-6 py-4 rounded-b-lg">
+            <h4 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-1.5">
+              <Zap className="h-4 w-4 text-primary" />
+              Key Habit to Change Now
+            </h4>
+            <p className="text-sm text-foreground/80 leading-relaxed">{rootCauses.keyHabitChange}</p>
+          </div>
         </CardContent>
       </Card>
 

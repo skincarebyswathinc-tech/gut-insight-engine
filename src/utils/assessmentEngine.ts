@@ -1,14 +1,102 @@
-import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
+  const score = calculateScore(r);
+  const gutType = classifyGutType(r);
   return {
     digestiveSymptoms: generateDigestive(r),
     eatingBehaviour: generateEating(r),
     lifestyle: generateLifestyle(r),
     dietPattern: generateDiet(r),
-    score: calculateScore(r),
-    gutType: classifyGutType(r),
+    score,
+    gutType,
+    rootCauses: analyzeRootCauses(r, score, gutType),
   };
+}
+
+function analyzeRootCauses(r: QuestionnaireResponse, score: GutHealthScore, gutType: GutTypeAnalysis): RootCauseAnalysis {
+  // Score potential root causes
+  const causes: { cause: string; detail: string; weight: number }[] = [];
+
+  // Dietary causes
+  if (r.processed_food === 'often' || r.processed_food === 'daily') {
+    causes.push({ cause: 'High Processed Food Intake', detail: 'Processed foods contain emulsifiers, preservatives, and artificial additives that damage the gut lining and reduce beneficial bacteria diversity.', weight: 9 });
+  }
+  if (r.fiber_intake === 'low') {
+    causes.push({ cause: 'Low Fiber Intake', detail: 'Your gut bacteria rely on fiber as fuel. Without enough, beneficial microbes starve and harmful ones can take over, leading to imbalance.', weight: 8 });
+  }
+  if (r.fruit_veg_servings < 3) {
+    causes.push({ cause: 'Low Plant Diversity', detail: `At ${r.fruit_veg_servings} servings/day, your gut isn't getting enough prebiotic compounds and polyphenols needed to nourish a diverse microbiome.`, weight: 7 });
+  }
+
+  // Lifestyle causes
+  if (r.stress_level === 'high' || r.stress_level === 'very_high') {
+    causes.push({ cause: 'Chronic Stress', detail: 'Ongoing stress activates your fight-or-flight response, which slows digestion, increases gut permeability, and shifts your microbiome toward inflammatory species.', weight: 9 });
+  }
+  if (r.sleep_hours < 6) {
+    causes.push({ cause: 'Sleep Deprivation', detail: `Getting only ${r.sleep_hours} hours disrupts your circadian rhythm, which directly controls gut motility and microbiome composition.`, weight: 8 });
+  }
+  if (r.water_intake < 5) {
+    causes.push({ cause: 'Inadequate Hydration', detail: `At ${r.water_intake} glasses/day, your digestive system lacks the fluid needed for proper mucosal lining and stool formation.`, weight: 7 });
+  }
+  if (r.exercise_frequency === 'none') {
+    causes.push({ cause: 'Sedentary Lifestyle', detail: 'Physical inactivity slows gut transit time, allowing harmful bacteria to linger longer and produce more toxins in the colon.', weight: 6 });
+  }
+
+  // Behavioural causes
+  if (r.eating_speed === 'fast') {
+    causes.push({ cause: 'Fast Eating Habits', detail: 'Eating too quickly bypasses proper chewing and enzyme release, sending larger food particles to the gut where they ferment and cause bloating.', weight: 5 });
+  }
+  if (r.late_night_eating) {
+    causes.push({ cause: 'Late-Night Eating', detail: 'Eating close to bedtime forces your digestive system to work when it should be resting, disrupting your migrating motor complex and gut repair cycle.', weight: 5 });
+  }
+  if (!r.mindful_eating) {
+    causes.push({ cause: 'Distracted Eating Patterns', detail: 'Eating without awareness reduces digestive enzyme production and can lead to overeating, putting extra strain on your gut.', weight: 4 });
+  }
+
+  // Symptom-based causes
+  if (r.food_triggers.length >= 3) {
+    causes.push({ cause: 'Multiple Food Sensitivities', detail: `Reacting to ${r.food_triggers.length} food groups suggests increased intestinal permeability, where partially digested proteins enter the bloodstream and trigger immune responses.`, weight: 8 });
+  }
+
+  // Sort and take top 3
+  causes.sort((a, b) => b.weight - a.weight);
+  const topCauses = causes.slice(0, 3).map(({ cause, detail }) => ({ cause, detail }));
+
+  // If fewer than 3, pad with a generic one
+  while (topCauses.length < 3) {
+    topCauses.push({ cause: 'General Dietary Imbalance', detail: 'Small cumulative gaps in nutrition and habits can add up to affect your gut over time.' });
+  }
+
+  // Digestive pattern explanation
+  const patternParts: string[] = [];
+  patternParts.push(`Your digestive system is showing a ${gutType.primary.toLowerCase()} pattern.`);
+  if (score.total < 50) {
+    patternParts.push('Multiple areas of your health are contributing to digestive strain, creating a cycle where symptoms reinforce each other.');
+  } else if (score.total < 70) {
+    patternParts.push('While your foundation is decent, specific weak spots are creating a bottleneck in your digestive efficiency.');
+  } else {
+    patternParts.push('Your overall health supports good digestion, with just a few targeted areas that could unlock even better gut function.');
+  }
+  const digestivePatternExplanation = patternParts.join(' ');
+
+  // Key habit change — pick the highest-weight actionable cause
+  const habitMap: Record<string, string> = {
+    'High Processed Food Intake': 'Start by replacing one processed meal per day with a whole-food alternative — this single swap can begin restoring your gut lining within weeks.',
+    'Low Fiber Intake': 'Add one serving of beans, lentils, or whole grains to your daily meals — your beneficial bacteria will start responding within days.',
+    'Chronic Stress': 'Introduce 5 minutes of deep breathing before meals — this activates your rest-and-digest mode and can immediately improve nutrient absorption.',
+    'Sleep Deprivation': 'Prioritize getting to bed 30 minutes earlier tonight — even small sleep gains have a measurable impact on gut bacteria diversity.',
+    'Inadequate Hydration': 'Start your morning with a large glass of water before anything else — hydrating first thing kick-starts your digestive system for the day.',
+    'Low Plant Diversity': 'Add one new vegetable or fruit to your meals this week — gut diversity improves most when you eat a wider variety of plants.',
+    'Sedentary Lifestyle': 'Take a 15-minute walk after your largest meal — this simple habit significantly improves gut transit and reduces bloating.',
+    'Fast Eating Habits': 'Put your fork down between bites at your next meal — slowing down gives your stomach time to signal fullness and improves digestion.',
+    'Late-Night Eating': 'Stop eating 3 hours before bedtime starting tonight — this gives your gut the overnight rest it needs for repair and cleanup.',
+    'Multiple Food Sensitivities': 'Keep a simple food-symptom diary for one week — identifying your top trigger food is the fastest path to relief.',
+  };
+
+  const keyHabitChange = habitMap[topCauses[0].cause] || 'Focus on the most impactful change: improve one meal at a time with more whole foods and mindful eating.';
+
+  return { topCauses, digestivePatternExplanation, keyHabitChange };
 }
 
 function classifyGutType(r: QuestionnaireResponse): GutTypeAnalysis {

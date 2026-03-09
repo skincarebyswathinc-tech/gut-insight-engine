@@ -36,6 +36,7 @@ export interface AssessmentSummary {
   dietPattern: string;
   score: GutHealthScore;
   gutType: GutTypeAnalysis;
+  rootCauses: RootCauseAnalysis;
 }
 
 export type GutTypeName = 'Inflammatory Gut' | 'Sluggish Gut' | 'Dysbiosis Gut' | 'Stress Gut';
@@ -44,6 +45,12 @@ export interface GutTypeAnalysis {
   primary: GutTypeName;
   secondary: GutTypeName | null;
   explanation: string;
+}
+
+export interface RootCauseAnalysis {
+  topCauses: { cause: string; detail: string }[];
+  digestivePatternExplanation: string;
+  keyHabitChange: string;
 }
 
 export interface GutHealthScore {
