@@ -40,6 +40,16 @@ export interface AssessmentSummary {
   programRecommendation: ProgramRecommendation;
   healingStrategy: HealingStrategy;
   drinkPlan: DrinkDay[];
+  breakfastPlan: BreakfastDay[];
+}
+
+export interface BreakfastDay {
+  day: number;
+  complexCarb: string;
+  rawVegetable: string;
+  cookedVegetable: string;
+  protein: string;
+  dishIdea: string;
 }
 
 export interface DrinkDay {
