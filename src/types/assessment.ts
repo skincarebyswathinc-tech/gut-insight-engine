@@ -38,6 +38,22 @@ export interface AssessmentSummary {
   gutType: GutTypeAnalysis;
   rootCauses: RootCauseAnalysis;
   programRecommendation: ProgramRecommendation;
+  healingStrategy: HealingStrategy;
+}
+
+export interface HealingPhase {
+  name: string;
+  duration: string;
+  focus: string;
+  digestion: string;
+  skin: string;
+  metabolism: string;
+  inflammation: string;
+}
+
+export interface HealingStrategy {
+  overview: string;
+  phases: [HealingPhase, HealingPhase, HealingPhase];
 }
 
 export type ProgramType = '14 Day Gut Reset' | '28 Day Deep Gut Reset';
