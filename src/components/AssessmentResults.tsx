@@ -37,8 +37,16 @@ function getScoreLabel(total: number) {
   return 'Needs Attention';
 }
 
+const GUT_TYPE_META: Record<GutTypeName, { icon: typeof Flame; color: string; bg: string }> = {
+  'Inflammatory Gut': { icon: Flame, color: 'text-destructive', bg: 'bg-destructive/10' },
+  'Sluggish Gut': { icon: Snail, color: 'text-muted-foreground', bg: 'bg-muted' },
+  'Dysbiosis Gut': { icon: Bug, color: 'text-primary', bg: 'bg-primary/10' },
+  'Stress Gut': { icon: Brain, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+};
+
 export default function AssessmentResults({ summary, onReset }: Props) {
-  const { score } = summary;
+  const { score, gutType } = summary;
+  const primaryMeta = GUT_TYPE_META[gutType.primary];
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
