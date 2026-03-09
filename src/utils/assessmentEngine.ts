@@ -1,4 +1,4 @@
-import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay, SnackDay } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay, SnackDay, LunchDay } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
   const score = calculateScore(r);
