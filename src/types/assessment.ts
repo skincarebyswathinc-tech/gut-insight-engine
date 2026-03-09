@@ -41,6 +41,7 @@ export interface AssessmentSummary {
   healingStrategy: HealingStrategy;
   drinkPlan: DrinkDay[];
   breakfastPlan: BreakfastDay[];
+  snackPlan: SnackDay[];
 }
 
 export interface BreakfastDay {
