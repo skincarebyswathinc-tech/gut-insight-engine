@@ -44,6 +44,13 @@ export interface AssessmentSummary {
   snackPlan: SnackDay[];
   lunchPlan: LunchDay[];
   eveningSnackPlan: EveningSnackDay[];
+  dinnerPlan: DinnerDay[];
+}
+
+export interface DinnerDay {
+  day: number;
+  meal: string;
+  whyItHelps: string;
 }
 
 export interface EveningSnackDay {

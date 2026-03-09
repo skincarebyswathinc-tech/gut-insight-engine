@@ -45,7 +45,7 @@ const GUT_TYPE_META: Record<GutTypeName, { icon: typeof Flame; color: string; bg
 };
 
 export default function AssessmentResults({ summary, onReset }: Props) {
-  const { score, gutType, rootCauses, programRecommendation, healingStrategy, drinkPlan, breakfastPlan, snackPlan, lunchPlan, eveningSnackPlan } = summary;
+  const { score, gutType, rootCauses, programRecommendation, healingStrategy, drinkPlan, breakfastPlan, snackPlan, lunchPlan, eveningSnackPlan, dinnerPlan } = summary;
   const primaryMeta = GUT_TYPE_META[gutType.primary];
 
   return (
@@ -411,6 +411,39 @@ export default function AssessmentResults({ summary, onReset }: Props) {
                     <td className="px-4 py-3 font-medium text-primary">{day.day}</td>
                     <td className="px-4 py-3 font-medium text-foreground">{day.snack}</td>
                     <td className="px-4 py-3 text-xs text-muted-foreground leading-relaxed">{day.digestiveBenefit}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Dinner Plan */}
+      <Card className="border-primary/20 shadow-lg overflow-hidden">
+        <CardHeader className="bg-primary/5 border-b border-border/50 pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-serif">
+            <Moon className="h-5 w-5 text-primary" />
+            Light Gut-Friendly Dinners
+          </CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">Easy to digest • Lower carb • Vegetable rich • Supports overnight gut repair</p>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border/50 bg-muted/30">
+                  <th className="px-4 py-3 text-left font-semibold text-foreground w-16">Day</th>
+                  <th className="px-4 py-3 text-left font-semibold text-foreground">Dinner Meal</th>
+                  <th className="px-4 py-3 text-left font-semibold text-foreground">Why It Helps Digestion</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dinnerPlan.map((day, idx) => (
+                  <tr key={day.day} className={idx % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                    <td className="px-4 py-3 font-medium text-primary">{day.day}</td>
+                    <td className="px-4 py-3 font-medium text-foreground">{day.meal}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground leading-relaxed">{day.whyItHelps}</td>
                   </tr>
                 ))}
               </tbody>
