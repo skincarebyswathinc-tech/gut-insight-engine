@@ -1,4 +1,4 @@
-import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay, SnackDay } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
   const score = calculateScore(r);
@@ -16,7 +16,52 @@ export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary 
     healingStrategy: createHealingStrategy(r, gutType, programRecommendation),
     drinkPlan: generateDrinkPlan(programRecommendation, gutType),
     breakfastPlan: generateBreakfastPlan(r, programRecommendation),
+    snackPlan: generateSnackPlan(programRecommendation, gutType),
   };
+}
+
+function generateSnackPlan(program: ProgramRecommendation, gutType: GutTypeAnalysis): SnackDay[] {
+  const days = program.program === '28 Day Deep Gut Reset' ? 28 : 14;
+
+  // Gut-supportive Indian snacks
+  const snacks = [
+    { snack: 'Ripe papaya cubes with flax seeds', benefit: 'Papain enzyme aids protein digestion; flax provides prebiotic fiber' },
+    { snack: 'Soaked almonds with fresh guava', benefit: 'Gut-friendly fats with vitamin C boost for collagen & skin health' },
+    { snack: 'Coconut chunks with pumpkin seeds', benefit: 'MCTs support gut lining; zinc from seeds aids tissue repair' },
+    { snack: 'Pomegranate arils with soaked almonds', benefit: 'Polyphenols feed beneficial bacteria; supports microbiome diversity' },
+    { snack: 'Fresh papaya with coconut flakes', benefit: 'Digestive enzymes + lauric acid for antimicrobial gut support' },
+    { snack: 'Guava slices with pumpkin seeds', benefit: 'High fiber for bowel regularity; seeds provide omega-3s for skin' },
+    { snack: 'Mixed seeds bowl (flax, pumpkin, sunflower)', benefit: 'Omega fatty acids reduce inflammation; fiber feeds gut bacteria' },
+    { snack: 'Soaked almonds with fresh coconut water', benefit: 'Hydrating electrolytes; almonds provide prebiotic fiber' },
+    { snack: 'Papaya & pomegranate fruit bowl', benefit: 'Enzyme-rich papaya + antioxidant pomegranate for gut-skin axis' },
+    { snack: 'Coconut yogurt with flax & pumpkin seeds', benefit: 'Probiotics + prebiotic fiber for complete microbiome support' },
+    { snack: 'Fresh guava with soaked walnuts', benefit: 'Fiber-rich guava + omega-3 walnuts for brain-gut connection' },
+    { snack: 'Papaya smoothie bowl with seeds', benefit: 'Blended enzymes for easy digestion; seeds add crunch & fiber' },
+    { snack: 'Pomegranate raita with roasted flax', benefit: 'Probiotic curd + polyphenols + fiber for triple gut support' },
+    { snack: 'Coconut & almond energy bites', benefit: 'Sustained energy release; healthy fats support hormone balance' },
+  ];
+
+  // Gut type specific benefits to append
+  const typeBonus: Record<GutTypeName, string> = {
+    'Inflammatory Gut': 'Cooling & anti-inflammatory properties soothe irritated gut.',
+    'Sluggish Gut': 'Fiber content stimulates peristalsis and promotes regularity.',
+    'Dysbiosis Gut': 'Prebiotic compounds help restore healthy bacterial balance.',
+    'Stress Gut': 'Magnesium-rich seeds calm nervous system and gut-brain axis.',
+  };
+
+  const plan: SnackDay[] = [];
+
+  for (let d = 1; d <= days; d++) {
+    const idx = (d - 1) % snacks.length;
+    const baseSnack = snacks[idx];
+    plan.push({
+      day: d,
+      snack: baseSnack.snack,
+      keyBenefit: `${baseSnack.benefit}. ${typeBonus[gutType.primary]}`,
+    });
+  }
+
+  return plan;
 }
 
 function generateBreakfastPlan(r: QuestionnaireResponse, program: ProgramRecommendation): BreakfastDay[] {
