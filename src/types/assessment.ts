@@ -45,6 +45,14 @@ export interface AssessmentSummary {
   lunchPlan: LunchDay[];
   eveningSnackPlan: EveningSnackDay[];
   dinnerPlan: DinnerDay[];
+  postDinnerPlan: PostDinnerDay[];
+}
+
+export interface PostDinnerDay {
+  day: number;
+  drink: string;
+  digestiveSolid: string;
+  benefit: string;
 }
 
 export interface DinnerDay {
