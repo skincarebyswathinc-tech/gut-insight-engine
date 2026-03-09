@@ -46,6 +46,12 @@ export interface GutTypeAnalysis {
   explanation: string;
 }
 
+export interface RootCauseAnalysis {
+  topCauses: { cause: string; detail: string }[];
+  digestivePatternExplanation: string;
+  keyHabitChange: string;
+}
+
 export interface GutHealthScore {
   total: number;
   digestiveHealth: number;
