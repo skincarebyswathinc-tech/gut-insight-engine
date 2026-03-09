@@ -1,4 +1,4 @@
-import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay, SnackDay, LunchDay } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay, SnackDay, LunchDay, EveningSnackDay } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
   const score = calculateScore(r);
@@ -18,7 +18,47 @@ export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary 
     breakfastPlan: generateBreakfastPlan(r, programRecommendation),
     snackPlan: generateSnackPlan(programRecommendation, gutType),
     lunchPlan: generateLunchPlan(r, programRecommendation, gutType),
+    eveningSnackPlan: generateEveningSnackPlan(programRecommendation, gutType),
   };
+}
+
+function generateEveningSnackPlan(program: ProgramRecommendation, gutType: GutTypeAnalysis): EveningSnackDay[] {
+  const days = program.program === '28 Day Deep Gut Reset' ? 28 : 14;
+
+  const snacks = [
+    { snack: 'Roasted chana with cumin & black salt', benefit: 'High fiber curbs cravings; slow-digesting protein prevents dinner overeating' },
+    { snack: 'Moong sprouts chaat with lemon & coriander', benefit: 'Prebiotic sprouts feed good bacteria; enzymes aid evening digestion' },
+    { snack: 'Warm cumin-coriander herbal tea with roasted makhana', benefit: 'Carminative herbs ease bloating; makhana provides light satiety' },
+    { snack: 'Soaked almonds & walnuts with a pinch of turmeric', benefit: 'Healthy fats stabilize blood sugar; turmeric reduces gut inflammation' },
+    { snack: 'Clear vegetable soup (lauki, carrot, celery)', benefit: 'Warm broth soothes digestive tract; low calorie yet filling' },
+    { snack: 'Roasted chana dal with curry leaves & ginger', benefit: 'Crunchy fiber satisfies hunger; curry leaves support liver detox' },
+    { snack: 'Mixed sprouts salad with pomegranate & mint', benefit: 'Diverse fiber feeds microbiome; polyphenols reduce inflammation' },
+    { snack: 'Fennel-ajwain herbal drink with roasted peanuts', benefit: 'Fennel relieves gas; ajwain stimulates digestive enzymes' },
+    { snack: 'Pumpkin seeds & flax seeds trail mix', benefit: 'Zinc supports gut lining repair; omega-3s calm intestinal inflammation' },
+    { snack: 'Warm tomato rasam soup', benefit: 'Tamarind & pepper boost metabolism; warm liquid prepares gut for dinner' },
+    { snack: 'Roasted chana with jaggery & coconut flakes', benefit: 'Natural sweetness kills sugar cravings; coconut MCTs support gut barrier' },
+    { snack: 'Cucumber & sprouts raita bowl', benefit: 'Probiotic curd + prebiotic sprouts for synbiotic gut support' },
+    { snack: 'Ginger-tulsi herbal tea with dry fruit mix', benefit: 'Adaptogenic herbs reduce stress eating; nuts provide slow-release energy' },
+    { snack: 'Light moong dal soup with black pepper', benefit: 'Easily digestible protein; piperine enhances nutrient absorption' },
+  ];
+
+  const typeBonus: Record<GutTypeName, string> = {
+    'Inflammatory Gut': 'Anti-inflammatory ingredients calm evening gut irritation.',
+    'Sluggish Gut': 'Fiber-rich snacks promote motility before the overnight rest period.',
+    'Dysbiosis Gut': 'Prebiotic compounds support bacterial rebalancing during sleep.',
+    'Stress Gut': 'Calming herbs reduce cortisol-driven evening cravings.',
+  };
+
+  const plan: EveningSnackDay[] = [];
+  for (let d = 1; d <= days; d++) {
+    const idx = (d - 1) % snacks.length;
+    plan.push({
+      day: d,
+      snack: snacks[idx].snack,
+      digestiveBenefit: `${snacks[idx].benefit}. ${typeBonus[gutType.primary]}`,
+    });
+  }
+  return plan;
 }
 
 function generateLunchPlan(r: QuestionnaireResponse, program: ProgramRecommendation, gutType: GutTypeAnalysis): LunchDay[] {
