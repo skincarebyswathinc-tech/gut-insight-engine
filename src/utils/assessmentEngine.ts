@@ -1,4 +1,4 @@
-import { QuestionnaireResponse, AssessmentSummary } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
   return {
@@ -6,6 +6,58 @@ export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary 
     eatingBehaviour: generateEating(r),
     lifestyle: generateLifestyle(r),
     dietPattern: generateDiet(r),
+    score: calculateScore(r),
+  };
+}
+
+function calculateScore(r: QuestionnaireResponse): GutHealthScore {
+  // Digestive Health: 0-30
+  const bloatingScore: Record<string, number> = { never: 10, rarely: 8, sometimes: 5, often: 2, daily: 0 };
+  const regularityScore: Record<string, number> = { regular: 8, mostly_regular: 6, irregular: 3, very_irregular: 0 };
+  const consistencyScore: Record<string, number> = { normal: 6, hard: 3, loose: 2, variable: 1 };
+  const painScore: Record<string, number> = { none: 6, mild: 4, moderate: 2, severe: 0 };
+
+  const digestiveHealth = bloatingScore[r.bloating] + regularityScore[r.bowel_regularity]
+    + consistencyScore[r.stool_consistency] + painScore[r.abdominal_pain]
+    - (r.reflux ? 2 : 0) - (r.excessive_gas ? 2 : 0) - (r.nausea ? 2 : 0);
+
+  // Diet Quality: 0-25
+  const fiberScore: Record<string, number> = { high: 8, moderate: 5, low: 1 };
+  const processedScore: Record<string, number> = { rarely: 7, sometimes: 5, often: 2, daily: 0 };
+  const fvScore = Math.min(10, r.fruit_veg_servings * 2);
+
+  const dietQuality = fiberScore[r.fiber_intake] + processedScore[r.processed_food] + fvScore;
+
+  // Lifestyle Balance: 0-25
+  const stressScore: Record<string, number> = { low: 8, moderate: 6, high: 3, very_high: 0 };
+  const exerciseScore: Record<string, number> = { none: 0, '1-2_weekly': 4, '3-4_weekly': 7, '5+_weekly': 9 };
+  const sleepScore = r.sleep_hours >= 7 ? 8 : r.sleep_hours >= 6 ? 5 : 2;
+
+  const lifestyleBalance = stressScore[r.stress_level] + exerciseScore[r.exercise_frequency] + sleepScore;
+
+  // Hydration: 0-20
+  const hydration = Math.min(20, Math.round(r.water_intake * 2.5));
+
+  const total = Math.max(0, Math.min(100, digestiveHealth + dietQuality + lifestyleBalance + hydration));
+
+  let explanation: string;
+  if (total >= 80) {
+    explanation = `Your gut health score of ${total}/100 indicates excellent digestive wellness. Continue maintaining your current habits for optimal microbiome support.`;
+  } else if (total >= 60) {
+    explanation = `Your gut health score of ${total}/100 suggests a generally healthy digestive system with room for improvement. Focus on the lowest-scoring category to make the most impactful changes.`;
+  } else if (total >= 40) {
+    explanation = `Your gut health score of ${total}/100 indicates moderate digestive concerns that warrant attention. Consider dietary and lifestyle modifications targeting your weakest areas.`;
+  } else {
+    explanation = `Your gut health score of ${total}/100 suggests significant digestive health challenges. A comprehensive approach addressing diet, stress, and hydration is strongly recommended.`;
+  }
+
+  return {
+    total,
+    digestiveHealth: Math.max(0, digestiveHealth),
+    dietQuality: Math.min(25, dietQuality),
+    lifestyleBalance: Math.min(25, lifestyleBalance),
+    hydration: Math.min(20, hydration),
+    explanation,
   };
 }
 
