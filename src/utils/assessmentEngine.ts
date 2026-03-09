@@ -1,4 +1,4 @@
-import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
   const score = calculateScore(r);
@@ -15,7 +15,145 @@ export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary 
     programRecommendation,
     healingStrategy: createHealingStrategy(r, gutType, programRecommendation),
     drinkPlan: generateDrinkPlan(programRecommendation, gutType),
+    breakfastPlan: generateBreakfastPlan(r, programRecommendation),
   };
+}
+
+function generateBreakfastPlan(r: QuestionnaireResponse, program: ProgramRecommendation): BreakfastDay[] {
+  const days = program.program === '28 Day Deep Gut Reset' ? 28 : 14;
+  const isVegan = r.diet_type === 'vegan';
+  const isVegetarian = r.diet_type === 'vegetarian';
+  const allowsEgg = !isVegan && !isVegetarian;
+
+  // Complex carbs (25%)
+  const carbs = [
+    'Poha (flattened rice)',
+    'Upma (semolina)',
+    'Ragi dosa',
+    'Brown rice idli',
+    'Oats porridge',
+    'Jowar roti',
+    'Bajra khichdi',
+    'Quinoa pulao',
+    'Sweet potato',
+    'Whole wheat paratha',
+  ];
+
+  // Raw vegetables/salads (25%)
+  const rawVegs = [
+    'Cucumber & tomato salad',
+    'Carrot & beetroot slaw',
+    'Cabbage & onion salad',
+    'Radish & coriander salad',
+    'Sprouts salad',
+    'Mixed greens with lemon',
+    'Raw papaya salad',
+    'Cucumber raita base',
+    'Tomato & onion kachumber',
+    'Grated carrot with lime',
+  ];
+
+  // Cooked vegetables (25%)
+  const cookedVegs = [
+    'Sautéed spinach (palak)',
+    'Lauki (bottle gourd) sabzi',
+    'Steamed broccoli',
+    'Stir-fried beans',
+    'Turai (ridge gourd) sabzi',
+    'Methi leaves stir-fry',
+    'Bhindi (okra) dry',
+    'Pumpkin sabzi',
+    'Cabbage poriyal',
+    'Mixed vegetable curry',
+  ];
+
+  // Proteins based on diet (25%)
+  const veganProteins = [
+    'Moong dal chilla',
+    'Chickpea salad',
+    'Sprouted moong',
+    'Tofu scramble',
+    'Chana masala',
+    'Rajma (kidney beans)',
+    'Black-eyed peas',
+    'Masoor dal',
+    'Soya chunks',
+    'Mixed dal',
+  ];
+
+  const vegProteins = [
+    ...veganProteins.slice(0, 7),
+    'Paneer bhurji',
+    'Cottage cheese cubes',
+    'Curd/yogurt bowl',
+  ];
+
+  const nonVegProteins = [
+    'Boiled egg',
+    'Egg bhurji',
+    'Omelette with veggies',
+    ...veganProteins.slice(0, 7),
+  ];
+
+  const proteins = isVegan ? veganProteins : isVegetarian ? vegProteins : nonVegProteins;
+
+  // Dish ideas combining all elements
+  const veganDishes = [
+    'Moong dal chilla with sautéed greens & salad',
+    'Oats upma with tofu & raw veggies',
+    'Ragi dosa with sambar & cucumber salad',
+    'Quinoa bowl with chickpeas & steamed veggies',
+    'Poha with sprouted moong & carrot slaw',
+    'Jowar roti with dal & palak sabzi',
+    'Sweet potato chaat with chana & raw salad',
+    'Bajra khichdi with mixed dal & lauki',
+    'Idli with sambar, coconut chutney & salad',
+    'Upma with soya chunks & stir-fried beans',
+  ];
+
+  const vegDishes = [
+    'Paneer bhurji paratha with salad & sabzi',
+    'Poha with curd & cucumber salad',
+    'Ragi dosa with paneer & palak',
+    'Oats with yogurt, nuts & raw veggies',
+    'Idli with sambar & carrot slaw',
+    'Upma with cottage cheese & steamed broccoli',
+    'Chilla with curd & mixed salad',
+    'Quinoa pulao with paneer & beans sabzi',
+    'Sweet potato with yogurt & sprouts',
+    'Paratha with dal & bhindi dry',
+  ];
+
+  const nonVegDishes = [
+    'Egg bhurji with paratha & salad',
+    'Boiled eggs with poha & veggies',
+    'Omelette with roti & palak sabzi',
+    'Idli with egg curry & cucumber salad',
+    'Upma with boiled egg & raw salad',
+    'Quinoa with egg & steamed veggies',
+    'Sweet potato with egg & sprouts salad',
+    'Oats with egg whites & carrot slaw',
+    'Dosa with egg roast & cabbage salad',
+    'Bajra roti with egg bhurji & sabzi',
+  ];
+
+  const dishes = isVegan ? veganDishes : isVegetarian ? vegDishes : nonVegDishes;
+
+  const plan: BreakfastDay[] = [];
+
+  for (let d = 1; d <= days; d++) {
+    const idx = (d - 1) % 10;
+    plan.push({
+      day: d,
+      complexCarb: carbs[idx],
+      rawVegetable: rawVegs[idx],
+      cookedVegetable: cookedVegs[idx],
+      protein: proteins[idx],
+      dishIdea: dishes[idx],
+    });
+  }
+
+  return plan;
 }
 
 function generateDrinkPlan(program: ProgramRecommendation, gutType: GutTypeAnalysis): DrinkDay[] {
