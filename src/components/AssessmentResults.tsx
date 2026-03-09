@@ -275,6 +275,45 @@ export default function AssessmentResults({ summary, onReset }: Props) {
         </CardContent>
       </Card>
 
+      {/* Breakfast Plan */}
+      <Card className="border-primary/20 shadow-lg overflow-hidden">
+        <CardHeader className="bg-primary/5 border-b border-border/50 pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-serif">
+            <Egg className="h-5 w-5 text-primary" />
+            Gut-Friendly Breakfast Plates
+          </CardTitle>
+          <p className="text-xs text-muted-foreground mt-1">25% Complex Carbs • 25% Raw Veggies • 25% Cooked Veggies • 25% Protein</p>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border/50 bg-muted/30">
+                  <th className="px-3 py-3 text-left font-semibold text-foreground">Day</th>
+                  <th className="px-3 py-3 text-left font-semibold text-foreground">Complex Carb</th>
+                  <th className="px-3 py-3 text-left font-semibold text-foreground">Raw Vegetable</th>
+                  <th className="px-3 py-3 text-left font-semibold text-foreground">Cooked Vegetable</th>
+                  <th className="px-3 py-3 text-left font-semibold text-foreground">Protein</th>
+                  <th className="px-3 py-3 text-left font-semibold text-foreground">Dish Idea</th>
+                </tr>
+              </thead>
+              <tbody>
+                {breakfastPlan.map((day, idx) => (
+                  <tr key={day.day} className={idx % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                    <td className="px-3 py-3 font-medium text-primary">{day.day}</td>
+                    <td className="px-3 py-3 text-foreground/80">{day.complexCarb}</td>
+                    <td className="px-3 py-3 text-foreground/80">{day.rawVegetable}</td>
+                    <td className="px-3 py-3 text-foreground/80">{day.cookedVegetable}</td>
+                    <td className="px-3 py-3 text-foreground/80">{day.protein}</td>
+                    <td className="px-3 py-3 font-medium text-foreground">{day.dishIdea}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
       {SECTIONS.map(({ key, title, icon: Icon, color }) => (
         <Card key={key} className="border-primary/10 shadow-md hover:shadow-lg transition-shadow">
           <CardHeader className="pb-2">
