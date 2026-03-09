@@ -36,6 +36,7 @@ export interface AssessmentSummary {
   dietPattern: string;
   score: GutHealthScore;
   gutType: GutTypeAnalysis;
+  rootCauses: RootCauseAnalysis;
 }
 
 export type GutTypeName = 'Inflammatory Gut' | 'Sluggish Gut' | 'Dysbiosis Gut' | 'Stress Gut';
