@@ -34,4 +34,14 @@ export interface AssessmentSummary {
   eatingBehaviour: string;
   lifestyle: string;
   dietPattern: string;
+  score: GutHealthScore;
+}
+
+export interface GutHealthScore {
+  total: number;
+  digestiveHealth: number;   // 0-30
+  dietQuality: number;       // 0-25
+  lifestyleBalance: number;  // 0-25
+  hydration: number;         // 0-20
+  explanation: string;
 }
