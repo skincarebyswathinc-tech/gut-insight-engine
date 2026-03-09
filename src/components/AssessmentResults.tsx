@@ -2,7 +2,7 @@ import { AssessmentSummary, GutTypeName } from '@/types/assessment';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Activity, Utensils, Moon, Apple, Droplets, Heart, Flame, Snail, Bug, Brain, AlertTriangle, Zap, Search, Calendar, CheckCircle2, Sparkles, ShieldCheck, Leaf, GlassWater, Egg } from 'lucide-react';
+import { Activity, Utensils, Moon, Apple, Droplets, Heart, Flame, Snail, Bug, Brain, AlertTriangle, Zap, Search, Calendar, CheckCircle2, Sparkles, ShieldCheck, Leaf, GlassWater, Egg, Cookie } from 'lucide-react';
 
 interface Props {
   summary: AssessmentSummary;
