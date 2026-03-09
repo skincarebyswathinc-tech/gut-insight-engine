@@ -39,6 +39,14 @@ export interface AssessmentSummary {
   rootCauses: RootCauseAnalysis;
   programRecommendation: ProgramRecommendation;
   healingStrategy: HealingStrategy;
+  drinkPlan: DrinkDay[];
+}
+
+export interface DrinkDay {
+  day: number;
+  morningDetox: { name: string; ingredients: string };
+  functionalDrink: { name: string; ingredients: string };
+  benefits: string;
 }
 
 export interface HealingPhase {

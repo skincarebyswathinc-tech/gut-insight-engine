@@ -2,7 +2,7 @@ import { AssessmentSummary, GutTypeName } from '@/types/assessment';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Activity, Utensils, Moon, Apple, Droplets, Heart, Flame, Snail, Bug, Brain, AlertTriangle, Zap, Search, Calendar, CheckCircle2, Sparkles, ShieldCheck, Leaf } from 'lucide-react';
+import { Activity, Utensils, Moon, Apple, Droplets, Heart, Flame, Snail, Bug, Brain, AlertTriangle, Zap, Search, Calendar, CheckCircle2, Sparkles, ShieldCheck, Leaf, GlassWater } from 'lucide-react';
 
 interface Props {
   summary: AssessmentSummary;
@@ -45,7 +45,7 @@ const GUT_TYPE_META: Record<GutTypeName, { icon: typeof Flame; color: string; bg
 };
 
 export default function AssessmentResults({ summary, onReset }: Props) {
-  const { score, gutType, rootCauses, programRecommendation, healingStrategy } = summary;
+  const { score, gutType, rootCauses, programRecommendation, healingStrategy, drinkPlan } = summary;
   const primaryMeta = GUT_TYPE_META[gutType.primary];
 
   return (
@@ -232,6 +232,46 @@ export default function AssessmentResults({ summary, onReset }: Props) {
               </div>
             );
           })}
+        </CardContent>
+      </Card>
+
+      {/* Detox Drink Plan */}
+      <Card className="border-primary/20 shadow-lg overflow-hidden">
+        <CardHeader className="bg-primary/5 border-b border-border/50 pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-serif">
+            <GlassWater className="h-5 w-5 text-primary" />
+            Daily Detox & Functional Drinks
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border/50 bg-muted/30">
+                  <th className="px-4 py-3 text-left font-semibold text-foreground">Day</th>
+                  <th className="px-4 py-3 text-left font-semibold text-foreground">Morning Detox Drink</th>
+                  <th className="px-4 py-3 text-left font-semibold text-foreground">Functional Drink</th>
+                  <th className="px-4 py-3 text-left font-semibold text-foreground">Benefits</th>
+                </tr>
+              </thead>
+              <tbody>
+                {drinkPlan.map((day, idx) => (
+                  <tr key={day.day} className={idx % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                    <td className="px-4 py-3 font-medium text-primary">{day.day}</td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-foreground">{day.morningDetox.name}</p>
+                      <p className="text-xs text-muted-foreground">{day.morningDetox.ingredients}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-foreground">{day.functionalDrink.name}</p>
+                      <p className="text-xs text-muted-foreground">{day.functionalDrink.ingredients}</p>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{day.benefits}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
 
