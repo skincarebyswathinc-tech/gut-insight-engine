@@ -2,7 +2,7 @@ import { AssessmentSummary, GutTypeName } from '@/types/assessment';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Activity, Utensils, Moon, Apple, Droplets, Heart, Flame, Snail, Bug, Brain, AlertTriangle, Zap, Search, Calendar, CheckCircle2 } from 'lucide-react';
+import { Activity, Utensils, Moon, Apple, Droplets, Heart, Flame, Snail, Bug, Brain, AlertTriangle, Zap, Search, Calendar, CheckCircle2, Sparkles, ShieldCheck, Leaf } from 'lucide-react';
 
 interface Props {
   summary: AssessmentSummary;
@@ -45,7 +45,7 @@ const GUT_TYPE_META: Record<GutTypeName, { icon: typeof Flame; color: string; bg
 };
 
 export default function AssessmentResults({ summary, onReset }: Props) {
-  const { score, gutType, rootCauses, programRecommendation } = summary;
+  const { score, gutType, rootCauses, programRecommendation, healingStrategy } = summary;
   const primaryMeta = GUT_TYPE_META[gutType.primary];
 
   return (
@@ -173,6 +173,65 @@ export default function AssessmentResults({ summary, onReset }: Props) {
             </h4>
             <p className="text-sm text-foreground/80 leading-relaxed">{rootCauses.keyHabitChange}</p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Healing Strategy */}
+      <Card className="border-primary/20 shadow-lg overflow-hidden">
+        <CardHeader className="bg-primary/5 border-b border-border/50 pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-serif">
+            <Sparkles className="h-5 w-5 text-primary" />
+            Your Personalized Gut Reset Strategy
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-6">
+          <p className="text-sm text-foreground/80 leading-relaxed">{healingStrategy.overview}</p>
+
+          {healingStrategy.phases.map((phase, idx) => {
+            const phaseIcons = [ShieldCheck, Zap, Leaf];
+            const PhaseIcon = phaseIcons[idx];
+            const phaseColors = ['text-primary', 'text-yellow-600', 'text-green-600'];
+            return (
+              <div key={idx} className="border border-border/50 rounded-lg overflow-hidden">
+                <div className="bg-muted/50 px-4 py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <PhaseIcon className={`h-4 w-4 ${phaseColors[idx]}`} />
+                    <span className="font-semibold text-foreground">{phase.name}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground font-medium">{phase.duration}</span>
+                </div>
+                <div className="p-4 space-y-3">
+                  <p className="text-sm text-foreground/80 leading-relaxed">{phase.focus}</p>
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-foreground flex items-center gap-1">
+                        <Activity className="h-3 w-3 text-muted-foreground" /> Digestion
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{phase.digestion}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-foreground flex items-center gap-1">
+                        <Sparkles className="h-3 w-3 text-muted-foreground" /> Skin
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{phase.skin}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-foreground flex items-center gap-1">
+                        <Zap className="h-3 w-3 text-muted-foreground" /> Metabolism
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{phase.metabolism}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-foreground flex items-center gap-1">
+                        <Flame className="h-3 w-3 text-muted-foreground" /> Inflammation
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{phase.inflammation}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </CardContent>
       </Card>
 
