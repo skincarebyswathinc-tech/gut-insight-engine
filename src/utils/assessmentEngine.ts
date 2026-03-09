@@ -1,8 +1,9 @@
-import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
   const score = calculateScore(r);
   const gutType = classifyGutType(r);
+  const programRecommendation = recommendProgram(r, score);
   return {
     digestiveSymptoms: generateDigestive(r),
     eatingBehaviour: generateEating(r),
@@ -11,8 +12,79 @@ export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary 
     score,
     gutType,
     rootCauses: analyzeRootCauses(r, score, gutType),
-    programRecommendation: recommendProgram(r, score),
+    programRecommendation,
+    healingStrategy: createHealingStrategy(r, gutType, programRecommendation),
   };
+}
+
+function createHealingStrategy(r: QuestionnaireResponse, gutType: GutTypeAnalysis, program: ProgramRecommendation): HealingStrategy {
+  const is28Day = program.program === '28 Day Deep Gut Reset';
+  const dietLabel = r.diet_type.charAt(0).toUpperCase() + r.diet_type.slice(1);
+
+  // Phase durations based on program length
+  const durations = is28Day
+    ? ['Days 1-7', 'Days 8-18', 'Days 19-28']
+    : ['Days 1-4', 'Days 5-10', 'Days 11-14'];
+
+  // Tailor focus areas based on gut type
+  const typeSpecific: Record<GutTypeName, { calmFocus: string; repairFocus: string; restoreFocus: string }> = {
+    'Inflammatory Gut': {
+      calmFocus: 'removing inflammatory triggers and soothing the gut lining with anti-inflammatory foods',
+      repairFocus: 'rebuilding intestinal barrier integrity with targeted nutrients like L-glutamine and zinc',
+      restoreFocus: 'introducing diverse anti-inflammatory bacteria strains to establish immune balance',
+    },
+    'Sluggish Gut': {
+      calmFocus: 'hydrating the digestive tract and establishing regular bowel patterns',
+      repairFocus: 'stimulating motility through fiber progression and digestive enzyme support',
+      restoreFocus: 'populating with motility-enhancing bacteria and establishing long-term regularity',
+    },
+    'Dysbiosis Gut': {
+      calmFocus: 'reducing bacterial overgrowth by limiting fermentable substrates temporarily',
+      repairFocus: 'selectively feeding beneficial bacteria while starving harmful species',
+      restoreFocus: 'diversifying the microbiome with targeted prebiotics and probiotics',
+    },
+    'Stress Gut': {
+      calmFocus: 'activating the parasympathetic nervous system through mindful eating and stress reduction',
+      repairFocus: 'restoring gut-brain axis communication with nervine herbs and targeted nutrients',
+      restoreFocus: 'building resilience with psychobiotic strains that modulate stress response',
+    },
+  };
+
+  const specific = typeSpecific[gutType.primary];
+
+  const overview = `This ${is28Day ? '28-day' : '14-day'} ${dietLabel}-friendly protocol is designed for your ${gutType.primary.toLowerCase()} pattern. Each phase builds systematically on the last, moving from calming acute symptoms to deep cellular repair to lasting microbiome restoration.`;
+
+  const phases: [HealingPhase, HealingPhase, HealingPhase] = [
+    {
+      name: 'Phase 1: Gut Calm',
+      duration: durations[0],
+      focus: `Primary focus: ${specific.calmFocus}. This foundational phase removes irritants and creates the conditions for healing.`,
+      digestion: 'Acute symptoms like bloating, gas, and discomfort begin to subside as inflammatory triggers are removed and the digestive system gets a chance to rest.',
+      skin: 'Early improvements in skin clarity as the gut-skin axis begins to calm; reduced redness and breakouts often appear within the first week.',
+      metabolism: 'Blood sugar stabilization begins as processed foods are eliminated; initial energy improvements as digestive burden decreases.',
+      inflammation: 'Systemic inflammation markers start declining as dietary triggers are removed and the gut lining is no longer constantly irritated.',
+    },
+    {
+      name: 'Phase 2: Gut Repair',
+      duration: durations[1],
+      focus: `Primary focus: ${specific.repairFocus}. This phase provides the building blocks your gut needs to rebuild its protective barrier.`,
+      digestion: 'Bowel regularity improves significantly; nutrient absorption increases as the intestinal lining heals and tight junctions are restored.',
+      skin: 'Deeper skin healing as improved nutrient absorption delivers more vitamins and minerals to skin cells; collagen synthesis support.',
+      metabolism: 'Metabolic efficiency improves as the gut begins properly signaling hunger and satiety hormones; weight regulation normalizes.',
+      inflammation: 'Gut permeability decreases, reducing the leakage of inflammatory compounds into the bloodstream; joint and muscle comfort often improves.',
+    },
+    {
+      name: 'Phase 3: Microbiome Restore',
+      duration: durations[2],
+      focus: `Primary focus: ${specific.restoreFocus}. This phase establishes a diverse, resilient microbiome for long-term health.`,
+      digestion: 'Digestive confidence returns; ability to tolerate a wider variety of foods as the microbiome becomes more robust and adaptable.',
+      skin: 'Lasting skin improvements as a healthy microbiome produces beneficial postbiotics that support skin barrier function and reduce sensitivity.',
+      metabolism: 'Optimized metabolic flexibility as diverse gut bacteria improve insulin sensitivity and fat metabolism; sustained energy throughout the day.',
+      inflammation: 'Long-term immune modulation as beneficial bacteria train the immune system to respond appropriately; reduced reactivity to environmental triggers.',
+    },
+  ];
+
+  return { overview, phases };
 }
 
 function recommendProgram(r: QuestionnaireResponse, score: GutHealthScore): ProgramRecommendation {
