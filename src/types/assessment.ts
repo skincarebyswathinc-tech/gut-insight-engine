@@ -35,13 +35,22 @@ export interface AssessmentSummary {
   lifestyle: string;
   dietPattern: string;
   score: GutHealthScore;
+  gutType: GutTypeAnalysis;
+}
+
+export type GutTypeName = 'Inflammatory Gut' | 'Sluggish Gut' | 'Dysbiosis Gut' | 'Stress Gut';
+
+export interface GutTypeAnalysis {
+  primary: GutTypeName;
+  secondary: GutTypeName | null;
+  explanation: string;
 }
 
 export interface GutHealthScore {
   total: number;
-  digestiveHealth: number;   // 0-30
-  dietQuality: number;       // 0-25
-  lifestyleBalance: number;  // 0-25
-  hydration: number;         // 0-20
+  digestiveHealth: number;
+  dietQuality: number;
+  lifestyleBalance: number;
+  hydration: number;
   explanation: string;
 }
