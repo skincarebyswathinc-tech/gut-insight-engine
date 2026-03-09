@@ -45,7 +45,7 @@ const GUT_TYPE_META: Record<GutTypeName, { icon: typeof Flame; color: string; bg
 };
 
 export default function AssessmentResults({ summary, onReset }: Props) {
-  const { score, gutType, rootCauses } = summary;
+  const { score, gutType, rootCauses, programRecommendation } = summary;
   const primaryMeta = GUT_TYPE_META[gutType.primary];
 
   return (
