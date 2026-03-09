@@ -1,4 +1,4 @@
-import { QuestionnaireResponse, AssessmentSummary, GutHealthScore } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
   return {
@@ -7,7 +7,63 @@ export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary 
     lifestyle: generateLifestyle(r),
     dietPattern: generateDiet(r),
     score: calculateScore(r),
+    gutType: classifyGutType(r),
   };
+}
+
+function classifyGutType(r: QuestionnaireResponse): GutTypeAnalysis {
+  // Score each gut type pattern
+  const scores: Record<GutTypeName, number> = {
+    'Inflammatory Gut': 0,
+    'Sluggish Gut': 0,
+    'Dysbiosis Gut': 0,
+    'Stress Gut': 0,
+  };
+
+  // Inflammatory: loose stools, reflux, food triggers, processed food
+  if (r.stool_consistency === 'loose') scores['Inflammatory Gut'] += 3;
+  if (r.reflux) scores['Inflammatory Gut'] += 2;
+  if (r.abdominal_pain === 'moderate' || r.abdominal_pain === 'severe') scores['Inflammatory Gut'] += 3;
+  if (r.food_triggers.length >= 2) scores['Inflammatory Gut'] += 2;
+  if (r.processed_food === 'often' || r.processed_food === 'daily') scores['Inflammatory Gut'] += 2;
+
+  // Sluggish: hard stool, irregular, low fiber, low exercise, low water
+  if (r.stool_consistency === 'hard') scores['Sluggish Gut'] += 3;
+  if (r.bowel_regularity === 'irregular' || r.bowel_regularity === 'very_irregular') scores['Sluggish Gut'] += 2;
+  if (r.fiber_intake === 'low') scores['Sluggish Gut'] += 2;
+  if (r.exercise_frequency === 'none') scores['Sluggish Gut'] += 2;
+  if (r.water_intake < 5) scores['Sluggish Gut'] += 2;
+  if (r.fruit_veg_servings < 3) scores['Sluggish Gut'] += 1;
+
+  // Dysbiosis: bloating, gas, variable stool, processed food, low fiber
+  if (r.bloating === 'often' || r.bloating === 'daily') scores['Dysbiosis Gut'] += 3;
+  if (r.excessive_gas) scores['Dysbiosis Gut'] += 2;
+  if (r.stool_consistency === 'variable') scores['Dysbiosis Gut'] += 2;
+  if (r.processed_food === 'often' || r.processed_food === 'daily') scores['Dysbiosis Gut'] += 2;
+  if (r.fiber_intake === 'low') scores['Dysbiosis Gut'] += 1;
+  if (r.food_triggers.length >= 3) scores['Dysbiosis Gut'] += 2;
+
+  // Stress Gut: high stress, poor sleep, nausea, variable/irregular, fast eating
+  if (r.stress_level === 'high' || r.stress_level === 'very_high') scores['Stress Gut'] += 3;
+  if (r.sleep_hours < 6) scores['Stress Gut'] += 2;
+  if (r.nausea) scores['Stress Gut'] += 2;
+  if (r.eating_speed === 'fast') scores['Stress Gut'] += 1;
+  if (r.late_night_eating) scores['Stress Gut'] += 1;
+  if (!r.mindful_eating) scores['Stress Gut'] += 1;
+  if (r.bowel_regularity === 'irregular' || r.bowel_regularity === 'very_irregular') scores['Stress Gut'] += 1;
+
+  const sorted = (Object.entries(scores) as [GutTypeName, number][]).sort((a, b) => b[1] - a[1]);
+  const primary = sorted[0][0];
+  const secondary = sorted[1][1] >= 3 && sorted[1][0] !== primary ? sorted[1][0] : null;
+
+  const explanations: Record<GutTypeName, string> = {
+    'Inflammatory Gut': `Your symptoms — including ${r.stool_consistency === 'loose' ? 'loose stools, ' : ''}${r.reflux ? 'acid reflux, ' : ''}${r.abdominal_pain !== 'none' ? 'abdominal pain, ' : ''}and sensitivity to certain foods — suggest your gut lining may be irritated. This pattern is often driven by processed foods, food intolerances, and inflammatory triggers that compromise the intestinal barrier.`,
+    'Sluggish Gut': `Your digestive system appears to be moving slowly, based on ${r.stool_consistency === 'hard' ? 'hard stools, ' : ''}${r.bowel_regularity.includes('irregular') ? 'irregular bowel movements, ' : ''}and lower fiber and hydration levels. This pattern typically improves with more water, fiber-rich foods, and regular physical activity to stimulate gut motility.`,
+    'Dysbiosis Gut': `Frequent bloating${r.excessive_gas ? ', excessive gas' : ''}, and variable digestive patterns suggest an imbalance in your gut bacteria. This can result from a diet high in processed foods and low in fiber-rich, prebiotic foods that feed beneficial microbes.`,
+    'Stress Gut': `Your high stress levels${r.sleep_hours < 6 ? ', poor sleep' : ''}${r.nausea ? ', nausea' : ''}, and eating habits indicate that your gut-brain axis is under strain. Chronic stress disrupts gut motility and can alter the microbiome, leading to unpredictable digestive symptoms.`,
+  };
+
+  return { primary, secondary, explanation: explanations[primary] };
 }
 
 function calculateScore(r: QuestionnaireResponse): GutHealthScore {

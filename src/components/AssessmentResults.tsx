@@ -1,8 +1,8 @@
-import { AssessmentSummary } from '@/types/assessment';
+import { AssessmentSummary, GutTypeName } from '@/types/assessment';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Activity, Utensils, Moon, Apple, Droplets, Heart } from 'lucide-react';
+import { Activity, Utensils, Moon, Apple, Droplets, Heart, Flame, Snail, Bug, Brain } from 'lucide-react';
 
 interface Props {
   summary: AssessmentSummary;
@@ -37,8 +37,16 @@ function getScoreLabel(total: number) {
   return 'Needs Attention';
 }
 
+const GUT_TYPE_META: Record<GutTypeName, { icon: typeof Flame; color: string; bg: string }> = {
+  'Inflammatory Gut': { icon: Flame, color: 'text-destructive', bg: 'bg-destructive/10' },
+  'Sluggish Gut': { icon: Snail, color: 'text-muted-foreground', bg: 'bg-muted' },
+  'Dysbiosis Gut': { icon: Bug, color: 'text-primary', bg: 'bg-primary/10' },
+  'Stress Gut': { icon: Brain, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+};
+
 export default function AssessmentResults({ summary, onReset }: Props) {
-  const { score } = summary;
+  const { score, gutType } = summary;
+  const primaryMeta = GUT_TYPE_META[gutType.primary];
 
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
@@ -90,6 +98,39 @@ export default function AssessmentResults({ summary, onReset }: Props) {
               );
             })}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Gut Type Classification */}
+      <Card className="border-primary/20 shadow-lg overflow-hidden">
+        <CardHeader className="bg-primary/5 border-b border-border/50 pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-serif">
+            <primaryMeta.icon className={`h-5 w-5 ${primaryMeta.color}`} />
+            Gut Microbiome Profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className={`p-3 rounded-full ${primaryMeta.bg}`}>
+              <primaryMeta.icon className={`h-6 w-6 ${primaryMeta.color}`} />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Primary Gut Type</p>
+              <p className={`text-xl font-serif font-bold ${primaryMeta.color}`}>{gutType.primary}</p>
+            </div>
+          </div>
+          {gutType.secondary && (
+            <div className="flex items-center gap-3 pl-1">
+              <div className={`p-2 rounded-full ${GUT_TYPE_META[gutType.secondary].bg}`}>
+                {(() => { const Icon = GUT_TYPE_META[gutType.secondary!].icon; return <Icon className={`h-4 w-4 ${GUT_TYPE_META[gutType.secondary!].color}`} />; })()}
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Secondary Pattern</p>
+                <p className="text-sm font-semibold text-foreground">{gutType.secondary}</p>
+              </div>
+            </div>
+          )}
+          <p className="text-sm text-foreground/80 leading-relaxed border-t border-border/50 pt-4">{gutType.explanation}</p>
         </CardContent>
       </Card>
 
