@@ -42,6 +42,7 @@ export interface AssessmentSummary {
   drinkPlan: DrinkDay[];
   breakfastPlan: BreakfastDay[];
   snackPlan: SnackDay[];
+  lunchPlan: LunchDay[];
 }
 
 export interface BreakfastDay {
