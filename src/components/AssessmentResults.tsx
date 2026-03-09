@@ -190,6 +190,43 @@ export default function AssessmentResults({ summary, onReset }: Props) {
         </Card>
       ))}
 
+      {/* Program Recommendation */}
+      <Card className="border-primary shadow-xl overflow-hidden">
+        <CardHeader className="bg-primary text-primary-foreground pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-serif">
+            <Calendar className="h-5 w-5" />
+            Recommended Program
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-5">
+          <div className="text-center pb-4 border-b border-border/50">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Your personalized path</p>
+            <h3 className="text-2xl font-serif font-bold text-primary">{programRecommendation.program}</h3>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold text-foreground mb-2">Why This Duration?</h4>
+            <p className="text-sm text-foreground/80 leading-relaxed">{programRecommendation.durationReason}</p>
+          </div>
+
+          <div>
+            <h4 className="text-sm font-semibold text-foreground mb-3">Expected Improvements</h4>
+            <div className="space-y-2">
+              {programRecommendation.expectedImprovements.map((improvement, i) => (
+                <div key={i} className="flex gap-2 items-start">
+                  <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-foreground/80">{improvement}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <Button className="w-full" size="lg">Start {programRecommendation.program}</Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="flex justify-center pt-4">
         <Button variant="outline" onClick={onReset}>Take Assessment Again</Button>
       </div>
