@@ -1,8 +1,8 @@
-import { AssessmentSummary } from '@/types/assessment';
+import { AssessmentSummary, GutTypeName } from '@/types/assessment';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Activity, Utensils, Moon, Apple, Droplets, Heart } from 'lucide-react';
+import { Activity, Utensils, Moon, Apple, Droplets, Heart, Flame, Snail, Bug, Brain } from 'lucide-react';
 
 interface Props {
   summary: AssessmentSummary;
