@@ -37,6 +37,15 @@ export interface AssessmentSummary {
   score: GutHealthScore;
   gutType: GutTypeAnalysis;
   rootCauses: RootCauseAnalysis;
+  programRecommendation: ProgramRecommendation;
+}
+
+export type ProgramType = '14 Day Gut Reset' | '28 Day Deep Gut Reset';
+
+export interface ProgramRecommendation {
+  program: ProgramType;
+  durationReason: string;
+  expectedImprovements: string[];
 }
 
 export type GutTypeName = 'Inflammatory Gut' | 'Sluggish Gut' | 'Dysbiosis Gut' | 'Stress Gut';
