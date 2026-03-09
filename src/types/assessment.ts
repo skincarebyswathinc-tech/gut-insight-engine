@@ -60,6 +60,15 @@ export interface SnackDay {
   keyBenefit: string;
 }
 
+export interface LunchDay {
+  day: number;
+  mainGrain: string;
+  vegetableDish: string;
+  proteinDish: string;
+  rawSalad: string;
+  gutBenefit: string;
+}
+
 export interface DrinkDay {
   day: number;
   morningDetox: { name: string; ingredients: string };
