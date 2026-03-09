@@ -1,4 +1,4 @@
-import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay, SnackDay, LunchDay, EveningSnackDay } from '@/types/assessment';
+import { QuestionnaireResponse, AssessmentSummary, GutHealthScore, GutTypeAnalysis, GutTypeName, RootCauseAnalysis, ProgramRecommendation, ProgramType, HealingStrategy, HealingPhase, DrinkDay, BreakfastDay, SnackDay, LunchDay, EveningSnackDay, DinnerDay } from '@/types/assessment';
 
 export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary {
   const score = calculateScore(r);
@@ -19,7 +19,47 @@ export function generateAssessment(r: QuestionnaireResponse): AssessmentSummary 
     snackPlan: generateSnackPlan(programRecommendation, gutType),
     lunchPlan: generateLunchPlan(r, programRecommendation, gutType),
     eveningSnackPlan: generateEveningSnackPlan(programRecommendation, gutType),
+    dinnerPlan: generateDinnerPlan(programRecommendation, gutType),
   };
+}
+
+function generateDinnerPlan(program: ProgramRecommendation, gutType: GutTypeAnalysis): DinnerDay[] {
+  const days = program.program === '28 Day Deep Gut Reset' ? 28 : 14;
+
+  const meals = [
+    { meal: 'Moong dal khichdi with steamed lauki & ghee', why: 'Easiest to digest grain-lentil combo; ghee lubricates intestinal lining for overnight repair' },
+    { meal: 'Clear vegetable soup (carrot, beans, spinach) with cumin tadka', why: 'Warm liquid requires minimal digestive effort; cumin prevents gas formation during sleep' },
+    { meal: 'Masoor dal soup with steamed broccoli & turmeric', why: 'Light red lentils digest quickly; turmeric reduces overnight gut inflammation' },
+    { meal: 'Steamed vegetables (pumpkin, zucchini, carrot) with mint chutney', why: 'Low residue meal prevents bloating; mint relaxes intestinal smooth muscle' },
+    { meal: 'Lauki (bottle gourd) dal with a small jowar roti', why: 'Cooling lauki soothes the gut; millet roti is lighter than wheat for evening digestion' },
+    { meal: 'Mixed vegetable stew with ginger & curry leaves', why: 'Ginger accelerates gastric emptying; diverse vegetables feed overnight bacterial activity' },
+    { meal: 'Yellow moong dal with steamed ridge gourd & cumin rice (small portion)', why: 'Split moong is pre-digestive friendly; minimal carb portion prevents blood sugar spikes at night' },
+    { meal: 'Tomato rasam with steamed carrots & beans', why: 'Peppery rasam stimulates digestive enzymes; tamarind provides gentle detoxification' },
+    { meal: 'Palak dal (spinach lentil soup) with a bajra roti', why: 'Iron-rich spinach supports overnight cellular repair; bajra is gluten-free and light' },
+    { meal: 'Pumpkin soup with roasted cumin & coriander garnish', why: 'Beta-carotene supports gut mucosal health; soluble fiber feeds beneficial bacteria overnight' },
+    { meal: 'Steamed idli (2 pieces) with sambar & coconut chutney', why: 'Fermented batter is probiotic-rich; small portion keeps dinner light and digestible' },
+    { meal: 'Ash gourd kootu with steamed rice (small portion)', why: 'Cooling ash gourd reduces pitta; kootu format ensures vegetable-heavy, low-carb balance' },
+    { meal: 'Moong sprouts soup with ginger, pepper & lemon', why: 'Sprouted enzymes ease digestion; warm broth promotes relaxation of digestive tract' },
+    { meal: 'Light vegetable khichdi with cucumber raita', why: 'One-pot meal is Ayurvedic gold for gut healing; raita adds probiotics for overnight microbiome support' },
+  ];
+
+  const typeBonus: Record<GutTypeName, string> = {
+    'Inflammatory Gut': 'Light dinner minimizes overnight inflammatory response in the gut.',
+    'Sluggish Gut': 'Easily digestible meals ensure complete overnight processing.',
+    'Dysbiosis Gut': 'Prebiotic-rich dinner feeds beneficial bacteria during peak overnight activity.',
+    'Stress Gut': 'Calming, warm meals activate parasympathetic digestion before sleep.',
+  };
+
+  const plan: DinnerDay[] = [];
+  for (let d = 1; d <= days; d++) {
+    const idx = (d - 1) % meals.length;
+    plan.push({
+      day: d,
+      meal: meals[idx].meal,
+      whyItHelps: `${meals[idx].why}. ${typeBonus[gutType.primary]}`,
+    });
+  }
+  return plan;
 }
 
 function generateEveningSnackPlan(program: ProgramRecommendation, gutType: GutTypeAnalysis): EveningSnackDay[] {
