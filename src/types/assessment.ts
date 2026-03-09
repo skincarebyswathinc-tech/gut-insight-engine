@@ -52,6 +52,12 @@ export interface BreakfastDay {
   dishIdea: string;
 }
 
+export interface SnackDay {
+  day: number;
+  snack: string;
+  keyBenefit: string;
+}
+
 export interface DrinkDay {
   day: number;
   morningDetox: { name: string; ingredients: string };
