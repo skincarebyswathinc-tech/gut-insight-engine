@@ -134,6 +134,48 @@ export default function AssessmentResults({ summary, onReset }: Props) {
         </CardContent>
       </Card>
 
+      {/* Root Cause Analysis */}
+      <Card className="border-primary/20 shadow-lg overflow-hidden">
+        <CardHeader className="bg-primary/5 border-b border-border/50 pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg font-serif">
+            <Search className="h-5 w-5 text-primary" />
+            Root Cause Analysis
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-5">
+          <div>
+            <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-1.5">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              Top 3 Root Causes
+            </h4>
+            <div className="space-y-3">
+              {rootCauses.topCauses.map((c, i) => (
+                <div key={i} className="flex gap-3 items-start">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{c.cause}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{c.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-border/50 pt-4">
+            <h4 className="text-sm font-semibold text-foreground mb-2">Digestive Pattern</h4>
+            <p className="text-sm text-foreground/80 leading-relaxed">{rootCauses.digestivePatternExplanation}</p>
+          </div>
+
+          <div className="border-t border-border/50 pt-4 bg-primary/5 -mx-6 -mb-6 px-6 py-4 rounded-b-lg">
+            <h4 className="text-sm font-semibold text-foreground mb-1 flex items-center gap-1.5">
+              <Zap className="h-4 w-4 text-primary" />
+              Key Habit to Change Now
+            </h4>
+            <p className="text-sm text-foreground/80 leading-relaxed">{rootCauses.keyHabitChange}</p>
+          </div>
+        </CardContent>
+      </Card>
+
       {SECTIONS.map(({ key, title, icon: Icon, color }) => (
         <Card key={key} className="border-primary/10 shadow-md hover:shadow-lg transition-shadow">
           <CardHeader className="pb-2">
