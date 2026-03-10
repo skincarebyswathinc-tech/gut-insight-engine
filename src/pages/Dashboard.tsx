@@ -3,8 +3,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, LogOut, Activity, Calendar, Award, User } from 'lucide-react';
+import { Leaf, LogOut, Activity, Calendar, Award, User, TrendingUp, ClipboardList, CreditCard, BarChart3 } from 'lucide-react';
 
 interface Profile {
   name: string;
@@ -16,21 +17,61 @@ interface Profile {
   signup_date: string;
 }
 
+interface DailyScore {
+  total_score: number;
+  hydration: number;
+  nutrition: number;
+  habits: number;
+  activity: number;
+  stress_balance: number;
+}
+
+interface Forecast {
+  current_score: number;
+  avg_7day: number;
+  daily_trend: number;
+  forecast: string;
+  data_points: number;
+}
+
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [todayScore, setTodayScore] = useState<DailyScore | null>(null);
+  const [forecast, setForecast] = useState<Forecast | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from('profiles')
+
+    // Load profile
+    supabase.from('profiles')
       .select('name, email, subscription_status, program_purchased, gut_score, program_start_date, signup_date')
+      .eq('user_id', user.id).single()
+      .then(({ data }) => { if (data) setProfile(data as Profile); });
+
+    // Load today's score
+    supabase.from('gut_progress_scores')
+      .select('*')
       .eq('user_id', user.id)
+      .eq('score_date', new Date().toISOString().split('T')[0])
       .single()
       .then(({ data }) => {
-        if (data) setProfile(data as Profile);
+        if (data) {
+          setTodayScore({
+            total_score: (data as any).total_score,
+            hydration: (data as any).hydration_score,
+            nutrition: (data as any).nutrition_score,
+            habits: (data as any).habit_compliance_score,
+            activity: (data as any).activity_score,
+            stress_balance: (data as any).stress_balance_score,
+          });
+        }
       });
+
+    // Load forecast
+    supabase.rpc('gut_recovery_forecast', { p_user_id: user.id })
+      .then(({ data }) => { if (data) setForecast(data as unknown as Forecast); });
   }, [user]);
 
   const handleSignOut = async () => {
@@ -38,13 +79,8 @@ export default function Dashboard() {
     navigate('/login');
   };
 
-  const handleTakeAssessment = () => {
-    navigate('/');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
-      {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -65,64 +101,133 @@ export default function Dashboard() {
           <p className="text-muted-foreground mt-1">Your Gut Reset Dashboard</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="border-primary/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-                <User className="h-4 w-4" /> Subscription
+              <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <User className="h-3.5 w-3.5" /> Subscription
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xl font-bold text-foreground capitalize">{profile?.subscription_status || 'Free'}</p>
+              <p className="text-lg font-bold text-foreground capitalize">{profile?.subscription_status || 'Free'}</p>
             </CardContent>
           </Card>
 
           <Card className="border-primary/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-                <Activity className="h-4 w-4" /> Gut Score
+              <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <Activity className="h-3.5 w-3.5" /> Gut Score
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xl font-bold text-primary">{profile?.gut_score ?? '—'}<span className="text-sm text-muted-foreground">/100</span></p>
+              <p className="text-lg font-bold text-primary">{profile?.gut_score ?? todayScore?.total_score ?? '—'}<span className="text-xs text-muted-foreground">/100</span></p>
             </CardContent>
           </Card>
 
           <Card className="border-primary/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-                <Award className="h-4 w-4" /> Program
+              <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <Award className="h-3.5 w-3.5" /> Program
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg font-bold text-foreground">{profile?.program_purchased || 'None yet'}</p>
+              <p className="text-sm font-bold text-foreground">{profile?.program_purchased || 'None'}</p>
             </CardContent>
           </Card>
 
           <Card className="border-primary/10">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-                <Calendar className="h-4 w-4" /> Start Date
+              <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5" /> Start Date
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg font-bold text-foreground">
+              <p className="text-sm font-bold text-foreground">
                 {profile?.program_start_date ? new Date(profile.program_start_date).toLocaleDateString() : '—'}
               </p>
             </CardContent>
           </Card>
         </div>
 
-        <Card className="border-primary/20 shadow-lg">
-          <CardContent className="p-8 text-center space-y-4">
-            <Leaf className="h-12 w-12 text-primary mx-auto" />
-            <h2 className="text-xl font-serif font-bold text-foreground">Take Your Gut Health Assessment</h2>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Complete our clinical questionnaire to get your personalized gut health score, gut type classification, and a customized healing plan.
-            </p>
-            <Button size="lg" onClick={handleTakeAssessment}>Start Assessment</Button>
-          </CardContent>
-        </Card>
+        {/* Today's Score Breakdown */}
+        {todayScore && (
+          <Card className="border-primary/20 shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-primary" /> Today's Gut Reset Score
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-24 h-24 rounded-full border-4 border-primary/20 flex items-center justify-center">
+                  <span className="text-3xl font-bold text-primary">{todayScore.total_score}</span>
+                </div>
+              </div>
+              {[
+                { label: 'Hydration', value: todayScore.hydration, max: 20 },
+                { label: 'Nutrition', value: todayScore.nutrition, max: 20 },
+                { label: 'Habits', value: todayScore.habits, max: 20 },
+                { label: 'Activity', value: todayScore.activity, max: 20 },
+                { label: 'Stress Balance', value: todayScore.stress_balance, max: 20 },
+              ].map(({ label, value, max }) => (
+                <div key={label} className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{label}</span>
+                    <span className="font-medium">{value}/{max}</span>
+                  </div>
+                  <Progress value={(value / max) * 100} className="h-2" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Gut Recovery Forecast */}
+        {forecast && (
+          <Card className="border-primary/20 shadow-lg bg-primary/5">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" /> Gut Recovery Forecast
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-foreground/80 leading-relaxed">{forecast.forecast}</p>
+              {forecast.avg_7day && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  7-day average: {forecast.avg_7day}/100 • Trend: {forecast.daily_trend > 0 ? '+' : ''}{forecast.daily_trend}/day
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Action Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card className="border-primary/10 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/daily-tracker')}>
+            <CardContent className="p-6 text-center">
+              <ClipboardList className="h-8 w-8 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold text-foreground">Daily Tracker</h3>
+              <p className="text-xs text-muted-foreground mt-1">Log today's habits</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/10 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/')}>
+            <CardContent className="p-6 text-center">
+              <Activity className="h-8 w-8 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold text-foreground">Gut Assessment</h3>
+              <p className="text-xs text-muted-foreground mt-1">Take the quiz</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/10 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/programs')}>
+            <CardContent className="p-6 text-center">
+              <CreditCard className="h-8 w-8 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold text-foreground">Programs</h3>
+              <p className="text-xs text-muted-foreground mt-1">View plans & pricing</p>
+            </CardContent>
+          </Card>
+        </div>
 
         <p className="text-xs text-muted-foreground text-center">
           Member since {profile?.signup_date ? new Date(profile.signup_date).toLocaleDateString() : '—'}
