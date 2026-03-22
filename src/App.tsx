@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import DailyTracker from "./pages/DailyTracker";
 import Programs from "./pages/Programs";
 import WeeklyReport from "./pages/WeeklyReport";
+import GutAgeTest from "./pages/GutAgeTest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/daily-tracker" element={<ProtectedRoute><DailyTracker /></ProtectedRoute>} />
             <Route path="/programs" element={<ProtectedRoute><Programs /></ProtectedRoute>} />
             <Route path="/weekly-report" element={<ProtectedRoute><WeeklyReport /></ProtectedRoute>} />
+            <Route path="/gut-age-test" element={<ProtectedRoute><GutAgeTest /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

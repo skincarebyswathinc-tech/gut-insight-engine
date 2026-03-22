@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, LogOut, Activity, Calendar, Award, User, TrendingUp, ClipboardList, CreditCard, BarChart3, FileText } from 'lucide-react';
+import { Leaf, LogOut, Activity, Calendar, Award, User, TrendingUp, ClipboardList, CreditCard, BarChart3, FileText, Clock } from 'lucide-react';
 import GutCoachInsights from '@/components/GutCoachInsights';
 
 interface Profile {
@@ -229,6 +229,14 @@ export default function Dashboard() {
               <Activity className="h-7 w-7 text-primary mx-auto mb-2" />
               <h3 className="font-semibold text-foreground text-sm">Gut Assessment</h3>
               <p className="text-xs text-muted-foreground mt-1">Take the quiz</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/10 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/gut-age-test')}>
+            <CardContent className="p-5 text-center">
+              <Clock className="h-7 w-7 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold text-foreground text-sm">Gut Age Test</h3>
+              <p className="text-xs text-muted-foreground mt-1">How old is your gut?</p>
             </CardContent>
           </Card>
 
