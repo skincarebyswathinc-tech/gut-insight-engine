@@ -13,6 +13,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import DailyTracker from "./pages/DailyTracker";
 import Programs from "./pages/Programs";
+import WeeklyReport from "./pages/WeeklyReport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
