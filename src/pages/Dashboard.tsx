@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, LogOut, Activity, Calendar, Award, User, TrendingUp, ClipboardList, CreditCard, BarChart3 } from 'lucide-react';
+import { Leaf, LogOut, Activity, Calendar, Award, User, TrendingUp, ClipboardList, CreditCard, BarChart3, FileText } from 'lucide-react';
 import GutCoachInsights from '@/components/GutCoachInsights';
 
 interface Profile {
@@ -207,28 +207,36 @@ export default function Dashboard() {
         {user && <GutCoachInsights userId={user.id} />}
 
         {/* Action Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <Card className="border-primary/10 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/daily-tracker')}>
-            <CardContent className="p-6 text-center">
-              <ClipboardList className="h-8 w-8 text-primary mx-auto mb-2" />
-              <h3 className="font-semibold text-foreground">Daily Tracker</h3>
+            <CardContent className="p-5 text-center">
+              <ClipboardList className="h-7 w-7 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold text-foreground text-sm">Daily Tracker</h3>
               <p className="text-xs text-muted-foreground mt-1">Log today's habits</p>
             </CardContent>
           </Card>
 
+          <Card className="border-primary/10 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/weekly-report')}>
+            <CardContent className="p-5 text-center">
+              <FileText className="h-7 w-7 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold text-foreground text-sm">Weekly Report</h3>
+              <p className="text-xs text-muted-foreground mt-1">View progress</p>
+            </CardContent>
+          </Card>
+
           <Card className="border-primary/10 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/')}>
-            <CardContent className="p-6 text-center">
-              <Activity className="h-8 w-8 text-primary mx-auto mb-2" />
-              <h3 className="font-semibold text-foreground">Gut Assessment</h3>
+            <CardContent className="p-5 text-center">
+              <Activity className="h-7 w-7 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold text-foreground text-sm">Gut Assessment</h3>
               <p className="text-xs text-muted-foreground mt-1">Take the quiz</p>
             </CardContent>
           </Card>
 
           <Card className="border-primary/10 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/programs')}>
-            <CardContent className="p-6 text-center">
-              <CreditCard className="h-8 w-8 text-primary mx-auto mb-2" />
-              <h3 className="font-semibold text-foreground">Programs</h3>
-              <p className="text-xs text-muted-foreground mt-1">View plans & pricing</p>
+            <CardContent className="p-5 text-center">
+              <CreditCard className="h-7 w-7 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold text-foreground text-sm">Programs</h3>
+              <p className="text-xs text-muted-foreground mt-1">Plans & pricing</p>
             </CardContent>
           </Card>
         </div>
