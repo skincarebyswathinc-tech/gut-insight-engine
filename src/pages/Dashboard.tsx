@@ -232,6 +232,14 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
+          <Card className="border-primary/10 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/gut-age-test')}>
+            <CardContent className="p-5 text-center">
+              <Clock className="h-7 w-7 text-primary mx-auto mb-2" />
+              <h3 className="font-semibold text-foreground text-sm">Gut Age Test</h3>
+              <p className="text-xs text-muted-foreground mt-1">How old is your gut?</p>
+            </CardContent>
+          </Card>
+
           <Card className="border-primary/10 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/programs')}>
             <CardContent className="p-5 text-center">
               <CreditCard className="h-7 w-7 text-primary mx-auto mb-2" />
