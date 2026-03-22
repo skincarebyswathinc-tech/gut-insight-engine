@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, LogOut, Activity, Calendar, Award, User, TrendingUp, ClipboardList, CreditCard, BarChart3 } from 'lucide-react';
+import GutCoachInsights from '@/components/GutCoachInsights';
 
 interface Profile {
   name: string;
