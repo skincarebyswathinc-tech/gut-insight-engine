@@ -11,12 +11,14 @@ import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, Droplets, Utensils, Brain, Activity, Moon, Heart, ArrowLeft, Save } from 'lucide-react';
+import DailyHealthSummary from '@/components/DailyHealthSummary';
 
 export default function DailyTracker() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const [dailyScores, setDailyScores] = useState<{ total_score: number; hydration: number; nutrition: number; habits: number; activity: number; stress_balance: number } | null>(null);
 
   const [form, setForm] = useState({
     water_glasses: 0,
@@ -52,12 +54,14 @@ export default function DailyTracker() {
       toast({ title: 'Error saving', description: error.message, variant: 'destructive' });
     } else {
       // Calculate daily score
-      await supabase.rpc('calculate_daily_gut_score', {
+      const { data: scoreData } = await supabase.rpc('calculate_daily_gut_score', {
         p_user_id: user.id,
         p_date: new Date().toISOString().split('T')[0],
       });
+      if (scoreData && typeof scoreData === 'object') {
+        setDailyScores(scoreData as any);
+      }
       toast({ title: 'Saved!', description: 'Your daily habits have been tracked.' });
-      navigate('/dashboard');
     }
     setSaving(false);
   };
@@ -190,10 +194,19 @@ export default function DailyTracker() {
           </CardContent>
         </Card>
 
-        <Button className="w-full" size="lg" onClick={handleSave} disabled={saving}>
-          <Save className="h-4 w-4 mr-2" />
-          {saving ? 'Saving…' : 'Save Daily Log'}
-        </Button>
+        {dailyScores ? (
+          <>
+            <DailyHealthSummary scores={dailyScores} trackerData={form} />
+            <Button className="w-full" size="lg" variant="outline" onClick={() => navigate('/dashboard')}>
+              Back to Dashboard
+            </Button>
+          </>
+        ) : (
+          <Button className="w-full" size="lg" onClick={handleSave} disabled={saving}>
+            <Save className="h-4 w-4 mr-2" />
+            {saving ? 'Saving…' : 'Save Daily Log'}
+          </Button>
+        )}
       </main>
     </div>
   );
