@@ -11,6 +11,7 @@ import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, Droplets, Utensils, Brain, Activity, Moon, Heart, ArrowLeft, Save } from 'lucide-react';
+import DailyHealthSummary from '@/components/DailyHealthSummary';
 
 export default function DailyTracker() {
   const { user } = useAuth();
