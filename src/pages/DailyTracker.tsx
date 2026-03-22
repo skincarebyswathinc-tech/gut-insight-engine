@@ -194,10 +194,19 @@ export default function DailyTracker() {
           </CardContent>
         </Card>
 
-        <Button className="w-full" size="lg" onClick={handleSave} disabled={saving}>
-          <Save className="h-4 w-4 mr-2" />
-          {saving ? 'Saving…' : 'Save Daily Log'}
-        </Button>
+        {dailyScores ? (
+          <>
+            <DailyHealthSummary scores={dailyScores} trackerData={form} />
+            <Button className="w-full" size="lg" variant="outline" onClick={() => navigate('/dashboard')}>
+              Back to Dashboard
+            </Button>
+          </>
+        ) : (
+          <Button className="w-full" size="lg" onClick={handleSave} disabled={saving}>
+            <Save className="h-4 w-4 mr-2" />
+            {saving ? 'Saving…' : 'Save Daily Log'}
+          </Button>
+        )}
       </main>
     </div>
   );
