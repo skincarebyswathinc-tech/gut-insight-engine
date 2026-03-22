@@ -18,6 +18,7 @@ export default function DailyTracker() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+  const [dailyScores, setDailyScores] = useState<{ total_score: number; hydration: number; nutrition: number; habits: number; activity: number; stress_balance: number } | null>(null);
 
   const [form, setForm] = useState({
     water_glasses: 0,
