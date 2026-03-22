@@ -54,12 +54,14 @@ export default function DailyTracker() {
       toast({ title: 'Error saving', description: error.message, variant: 'destructive' });
     } else {
       // Calculate daily score
-      await supabase.rpc('calculate_daily_gut_score', {
+      const { data: scoreData } = await supabase.rpc('calculate_daily_gut_score', {
         p_user_id: user.id,
         p_date: new Date().toISOString().split('T')[0],
       });
+      if (scoreData && typeof scoreData === 'object') {
+        setDailyScores(scoreData as any);
+      }
       toast({ title: 'Saved!', description: 'Your daily habits have been tracked.' });
-      navigate('/dashboard');
     }
     setSaving(false);
   };
