@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Droplets, Utensils, Activity, Brain, Heart, TrendingUp } from 'lucide-react';
+import { Droplets, Utensils, Activity, Brain, Heart, TrendingUp, TrendingDown, Minus, ArrowUp, ArrowDown, Sparkles, Target } from 'lucide-react';
 
 interface DailyScores {
   total_score: number;
@@ -28,6 +28,16 @@ interface TrackerData {
   fermented_food_taken: boolean;
 }
 
+interface PreviousScore {
+  total_score: number | null;
+  hydration_score: number;
+  nutrition_score: number;
+  habit_compliance_score: number;
+  activity_score: number;
+  stress_balance_score: number;
+  score_date: string;
+}
+
 function getScoreColor(score: number, max: number) {
   const pct = (score / max) * 100;
   if (pct >= 75) return 'text-green-600';
@@ -43,10 +53,61 @@ function getScoreLabel(score: number, max: number) {
   return 'Needs Improvement';
 }
 
+function getTrendIcon(diff: number) {
+  if (diff > 0) return <ArrowUp className="h-3.5 w-3.5 text-green-600" />;
+  if (diff < 0) return <ArrowDown className="h-3.5 w-3.5 text-red-500" />;
+  return <Minus className="h-3.5 w-3.5 text-muted-foreground" />;
+}
+
+function getTrendText(diff: number) {
+  if (diff > 0) return `+${diff} from yesterday`;
+  if (diff < 0) return `${diff} from yesterday`;
+  return 'Same as yesterday';
+}
+
+function getKeyImprovement(scores: DailyScores, prev: PreviousScore | null): string {
+  if (!prev || prev.total_score === null) return 'This is your first tracked day — great start on your gut reset journey!';
+
+  const diffs = [
+    { label: 'Hydration', diff: scores.hydration - prev.hydration_score },
+    { label: 'Nutrition', diff: scores.nutrition - prev.nutrition_score },
+    { label: 'Habit compliance', diff: scores.habits - prev.habit_compliance_score },
+    { label: 'Physical activity', diff: scores.activity - prev.activity_score },
+    { label: 'Stress balance', diff: scores.stress_balance - prev.stress_balance_score },
+  ];
+
+  const best = diffs.reduce((a, b) => (b.diff > a.diff ? b : a));
+
+  if (best.diff <= 0) {
+    // Find highest absolute score instead
+    const highest = [
+      { label: 'Hydration', score: scores.hydration },
+      { label: 'Nutrition', score: scores.nutrition },
+      { label: 'Habit compliance', score: scores.habits },
+      { label: 'Activity', score: scores.activity },
+      { label: 'Stress balance', score: scores.stress_balance },
+    ].reduce((a, b) => (b.score > a.score ? b : a));
+    return `${highest.label} was your strongest area today at ${highest.score}/20. Keep it up!`;
+  }
+
+  return `${best.label} improved by +${best.diff} points compared to yesterday. Your consistency is paying off!`;
+}
+
+function getHabitToImprove(scores: DailyScores, data: TrackerData): string {
+  const weakest = [
+    { key: 'hydration', score: scores.hydration, tip: `Drink at least ${Math.max(8, data.water_glasses + 2)} glasses of water and complete your detox drink.` },
+    { key: 'nutrition', score: scores.nutrition, tip: data.fermented_food_taken ? 'Focus on increasing fiber intake and meal compliance above 80%.' : 'Add a serving of fermented food (yogurt, kimchi, or sauerkraut) to your meals.' },
+    { key: 'habits', score: scores.habits, tip: 'Practice mindful eating at every meal — chew slowly and avoid screens while eating.' },
+    { key: 'activity', score: scores.activity, tip: data.step_count < 5000 ? 'Aim for at least 5,000 steps and a 15-minute post-meal walk.' : 'Add 10 more minutes of exercise or try gentle yoga for digestion.' },
+    { key: 'stress_balance', score: scores.stress_balance, tip: data.sleep_hours < 7 ? 'Prioritize 7+ hours of sleep — your gut repairs itself during deep sleep.' : 'Try 5 minutes of deep breathing before meals to reduce stress and improve digestion.' },
+  ].reduce((a, b) => (b.score < a.score ? b : a));
+
+  return weakest.tip;
+}
+
 function generateNarrative(scores: DailyScores, data: TrackerData): string {
   const parts: string[] = [];
 
-  // Hydration
   if (scores.hydration >= 16) {
     parts.push('Great hydration today — this keeps your digestive enzymes active and supports nutrient absorption.');
   } else if (scores.hydration >= 10) {
@@ -55,16 +116,14 @@ function generateNarrative(scores: DailyScores, data: TrackerData): string {
     parts.push('Low hydration detected. Dehydration slows digestion and can worsen bloating — prioritize water intake tomorrow.');
   }
 
-  // Nutrition
   if (scores.nutrition >= 16) {
     parts.push('Excellent diet compliance — your fiber and fermented food intake supports a diverse microbiome.');
   } else if (scores.nutrition >= 10) {
     parts.push('Nutrition was decent but could improve. Try adding more fermented foods and mindful eating to boost gut flora.');
   } else {
-    parts.push('Diet compliance was low today. Poor meal adherence disrupts your gut reset progress and feeding schedule.');
+    parts.push('Diet compliance was low today. Poor meal adherence disrupts your gut reset progress.');
   }
 
-  // Activity
   if (scores.activity >= 14) {
     parts.push('Strong physical activity! Movement stimulates peristalsis and helps prevent constipation.');
   } else if (scores.activity >= 8) {
@@ -73,45 +132,50 @@ function generateNarrative(scores: DailyScores, data: TrackerData): string {
     parts.push('Low activity today. Sedentary behavior slows gut motility — try gentle yoga or walking tomorrow.');
   }
 
-  // Stress
   if (scores.stress_balance >= 14) {
-    parts.push('Good stress balance and sleep — your gut-brain axis is functioning well, supporting healthy digestion.');
+    parts.push('Good stress balance and sleep — your gut-brain axis is functioning well.');
   } else if (scores.stress_balance >= 8) {
     parts.push('Moderate stress levels. Consider deep breathing exercises before meals to activate your parasympathetic nervous system.');
   } else {
-    parts.push('High stress and/or poor sleep detected. Chronic stress increases gut permeability and inflammation — prioritize rest.');
+    parts.push('High stress and/or poor sleep detected. Chronic stress increases gut permeability — prioritize rest.');
   }
 
-  // Symptoms
   if (data.bloating_level === 'none' && data.bowel_movement === 'excellent') {
-    parts.push('No digestive symptoms reported — your gut is responding well to the program!');
+    parts.push('No digestive symptoms — your gut is responding well to the program!');
   } else if (data.bloating_level === 'severe' || data.bowel_movement === 'none') {
     parts.push('Significant digestive symptoms noted. Review yesterday\'s food choices and ensure adequate fiber and water.');
-  } else {
-    parts.push(`Symptoms are manageable (bloating: ${data.bloating_level}, bowel: ${data.bowel_movement}). Consistency will improve these over time.`);
   }
 
   return parts.join(' ');
 }
 
 const categories = [
-  { key: 'hydration' as const, label: 'Hydration Score', max: 20, icon: Droplets },
-  { key: 'nutrition' as const, label: 'Diet Compliance', max: 20, icon: Utensils },
-  { key: 'habits' as const, label: 'Habit Compliance', max: 20, icon: Heart },
-  { key: 'activity' as const, label: 'Activity Score', max: 20, icon: Activity },
-  { key: 'stress_balance' as const, label: 'Stress Balance', max: 20, icon: Brain },
+  { key: 'hydration' as const, prevKey: 'hydration_score' as const, label: 'Hydration Score', max: 20, icon: Droplets },
+  { key: 'nutrition' as const, prevKey: 'nutrition_score' as const, label: 'Diet Compliance', max: 20, icon: Utensils },
+  { key: 'habits' as const, prevKey: 'habit_compliance_score' as const, label: 'Habit Compliance', max: 20, icon: Heart },
+  { key: 'activity' as const, prevKey: 'activity_score' as const, label: 'Activity Score', max: 20, icon: Activity },
+  { key: 'stress_balance' as const, prevKey: 'stress_balance_score' as const, label: 'Stress Balance', max: 20, icon: Brain },
 ];
 
-export default function DailyHealthSummary({ scores, trackerData }: { scores: DailyScores; trackerData: TrackerData }) {
+interface Props {
+  scores: DailyScores;
+  trackerData: TrackerData;
+  previousScores?: PreviousScore | null;
+}
+
+export default function DailyHealthSummary({ scores, trackerData, previousScores }: Props) {
   const narrative = generateNarrative(scores, trackerData);
+  const totalDiff = previousScores?.total_score != null ? scores.total_score - previousScores.total_score : null;
+  const keyImprovement = getKeyImprovement(scores, previousScores ?? null);
+  const habitToImprove = getHabitToImprove(scores, trackerData);
 
   return (
     <div className="space-y-6">
-      {/* Total Score */}
+      {/* Total Score with Trend */}
       <Card className="border-primary/20 shadow-lg">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2 font-serif">
-            <TrendingUp className="h-5 w-5 text-primary" /> Daily Health Summary
+            <TrendingUp className="h-5 w-5 text-primary" /> Daily Gut Progress Score
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -124,30 +188,79 @@ export default function DailyHealthSummary({ scores, trackerData }: { scores: Da
           <p className="text-center text-sm font-medium text-muted-foreground">
             {getScoreLabel(scores.total_score, 100)}
           </p>
+          {totalDiff !== null && (
+            <div className="flex items-center justify-center gap-1.5 mt-2">
+              {getTrendIcon(totalDiff)}
+              <span className={`text-xs font-medium ${totalDiff > 0 ? 'text-green-600' : totalDiff < 0 ? 'text-red-500' : 'text-muted-foreground'}`}>
+                {getTrendText(totalDiff)}
+              </span>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Category Breakdown */}
+      {/* Category Breakdown with Trends */}
       <Card className="border-primary/10">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Score Breakdown</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {categories.map(({ key, label, max, icon: Icon }) => (
-            <div key={key} className="space-y-1.5">
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <Icon className="h-4 w-4" /> {label}
-                </span>
-                <span className={`font-semibold ${getScoreColor(scores[key], max)}`}>
-                  {scores[key]}/{max} — {getScoreLabel(scores[key], max)}
-                </span>
+          {categories.map(({ key, prevKey, label, max, icon: Icon }) => {
+            const diff = previousScores ? scores[key] - previousScores[prevKey] : null;
+            return (
+              <div key={key} className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2 text-muted-foreground">
+                    <Icon className="h-4 w-4" /> {label}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {diff !== null && (
+                      <span className="flex items-center gap-0.5">
+                        {getTrendIcon(diff)}
+                      </span>
+                    )}
+                    <span className={`font-semibold ${getScoreColor(scores[key], max)}`}>
+                      {scores[key]}/{max}
+                    </span>
+                  </div>
+                </div>
+                <Progress value={(scores[key] / max) * 100} className="h-2.5" />
               </div>
-              <Progress value={(scores[key] / max) * 100} className="h-2.5" />
-            </div>
-          ))}
+            );
+          })}
         </CardContent>
       </Card>
+
+      {/* Key Improvement & Habit to Improve */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Card className="border-green-200 bg-green-50/50">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-full bg-green-100">
+                <Sparkles className="h-4 w-4 text-green-700" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-green-800 uppercase tracking-wide mb-1">Key Improvement</p>
+                <p className="text-sm text-green-900/80 leading-relaxed">{keyImprovement}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-full bg-amber-100">
+                <Target className="h-4 w-4 text-amber-700" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">Focus Tomorrow</p>
+                <p className="text-sm text-amber-900/80 leading-relaxed">{habitToImprove}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Symptom Snapshot */}
       <Card className="border-primary/10">
