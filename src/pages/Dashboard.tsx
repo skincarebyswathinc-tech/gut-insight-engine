@@ -203,6 +203,9 @@ export default function Dashboard() {
           </Card>
         )}
 
+        {/* AI Gut Coach Insights */}
+        {user && <GutCoachInsights userId={user.id} />}
+
         {/* Action Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card className="border-primary/10 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/daily-tracker')}>
