@@ -19,6 +19,7 @@ export default function DailyTracker() {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [dailyScores, setDailyScores] = useState<{ total_score: number; hydration: number; nutrition: number; habits: number; activity: number; stress_balance: number } | null>(null);
+  const [previousScores, setPreviousScores] = useState<any>(null);
 
   const [form, setForm] = useState({
     water_glasses: 0,
@@ -53,6 +54,16 @@ export default function DailyTracker() {
     if (error) {
       toast({ title: 'Error saving', description: error.message, variant: 'destructive' });
     } else {
+      // Fetch yesterday's scores for trend comparison
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const { data: prevData } = await supabase.from('gut_progress_scores')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('score_date', yesterday.toISOString().split('T')[0])
+        .single();
+      if (prevData) setPreviousScores(prevData);
+
       // Calculate daily score
       const { data: scoreData } = await supabase.rpc('calculate_daily_gut_score', {
         p_user_id: user.id,
@@ -196,7 +207,7 @@ export default function DailyTracker() {
 
         {dailyScores ? (
           <>
-            <DailyHealthSummary scores={dailyScores} trackerData={form} />
+            <DailyHealthSummary scores={dailyScores} trackerData={form} previousScores={previousScores} />
             <Button className="w-full" size="lg" variant="outline" onClick={() => navigate('/dashboard')}>
               Back to Dashboard
             </Button>
