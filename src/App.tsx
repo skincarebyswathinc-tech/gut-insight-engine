@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import DailyTracker from "./pages/DailyTracker";
 import Programs from "./pages/Programs";
 import WeeklyReport from "./pages/WeeklyReport";
+import GutAgeTest from "./pages/GutAgeTest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
