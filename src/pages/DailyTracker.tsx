@@ -207,7 +207,7 @@ export default function DailyTracker() {
 
         {dailyScores ? (
           <>
-            <DailyHealthSummary scores={dailyScores} trackerData={form} />
+            <DailyHealthSummary scores={dailyScores} trackerData={form} previousScores={previousScores} />
             <Button className="w-full" size="lg" variant="outline" onClick={() => navigate('/dashboard')}>
               Back to Dashboard
             </Button>
