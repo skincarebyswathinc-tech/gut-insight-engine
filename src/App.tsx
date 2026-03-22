@@ -34,6 +34,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/daily-tracker" element={<ProtectedRoute><DailyTracker /></ProtectedRoute>} />
             <Route path="/programs" element={<ProtectedRoute><Programs /></ProtectedRoute>} />
+            <Route path="/weekly-report" element={<ProtectedRoute><WeeklyReport /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
